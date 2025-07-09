@@ -1,0 +1,200 @@
+[gd_scene load_steps=2 format=3 uid="uid://dqfkfo3tt1mbg"]
+
+[ext_resource type="Script" uid="uid://pra8a8xdkj72" path="res://cell_grid/cell/cell.gd" id="1_yh0nt"]
+
+[node name="Cell" type="ColorRect" node_paths=PackedStringArray("pixels")]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_yh0nt")
+pixels = [NodePath("PixelHolder/ColorRect"), NodePath("PixelHolder/ColorRect2"), NodePath("PixelHolder/ColorRect3"), NodePath("PixelHolder/ColorRect4"), NodePath("PixelHolder/ColorRect5"), NodePath("PixelHolder/ColorRect6"), NodePath("PixelHolder/ColorRect7"), NodePath("PixelHolder/ColorRect8"), NodePath("PixelHolder/ColorRect9"), NodePath("PixelHolder/ColorRect10"), NodePath("PixelHolder/ColorRect11"), NodePath("PixelHolder/ColorRect12"), NodePath("PixelHolder/ColorRect13"), NodePath("PixelHolder/ColorRect14"), NodePath("PixelHolder/ColorRect15"), NodePath("PixelHolder/ColorRect16"), NodePath("PixelHolder/ColorRect17"), NodePath("PixelHolder/ColorRect18"), NodePath("PixelHolder/ColorRect19"), NodePath("PixelHolder/ColorRect20"), NodePath("PixelHolder/ColorRect21"), NodePath("PixelHolder/ColorRect22"), NodePath("PixelHolder/ColorRect23"), NodePath("PixelHolder/ColorRect24"), NodePath("PixelHolder/ColorRect25"), NodePath("PixelHolder/ColorRect26"), NodePath("PixelHolder/ColorRect27"), NodePath("PixelHolder/ColorRect28"), NodePath("PixelHolder/ColorRect29"), NodePath("PixelHolder/ColorRect30"), NodePath("PixelHolder/ColorRect31"), NodePath("PixelHolder/ColorRect32"), NodePath("PixelHolder/ColorRect33"), NodePath("PixelHolder/ColorRect34"), NodePath("PixelHolder/ColorRect35"), NodePath("PixelHolder/ColorRect36")]
+
+[node name="PixelHolder" type="GridContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
+columns = 6
+
+[node name="ColorRect" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect2" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect3" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect4" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect5" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect6" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect7" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect8" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect9" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect10" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect11" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect12" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect13" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect14" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect15" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect16" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect17" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect18" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect19" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect20" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect21" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect22" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect23" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect24" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect25" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect26" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect27" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect28" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect29" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect30" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect31" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect32" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect33" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect34" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect35" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect36" type="ColorRect" parent="PixelHolder"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
