@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dqfkfo3tt1mbg"]
 
-[ext_resource type="Script" uid="uid://pra8a8xdkj72" path="res://cell_grid/cell/cell.gd" id="1_yh0nt"]
+[ext_resource type="Script" uid="uid://pra8a8xdkj72" path="res://game/cell_grid/cell/cell.gd" id="1_yh0nt"]
 
 [node name="Cell" type="ColorRect" node_paths=PackedStringArray("pixels")]
 size_flags_horizontal = 3

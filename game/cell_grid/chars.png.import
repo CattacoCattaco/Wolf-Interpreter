@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://1t5rn58krst4"
-path="res://.godot/imported/chars.png-6a7552b2a607cf3ca3b3c316c30db848.ctex"
+path="res://.godot/imported/chars.png-8da59f81c69644cd061356aba582912b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://cell_grid/chars.png"
-dest_files=["res://.godot/imported/chars.png-6a7552b2a607cf3ca3b3c316c30db848.ctex"]
+source_file="res://game/cell_grid/chars.png"
+dest_files=["res://.godot/imported/chars.png-8da59f81c69644cd061356aba582912b.ctex"]
 
 [params]
 

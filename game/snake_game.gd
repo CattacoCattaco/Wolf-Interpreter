@@ -1,8 +1,5 @@
 class_name SnakeGame
-extends Control
-
-@export var timer: Timer
-@export var cell_grid: CellGrid
+extends Game
 
 var move_dir := Vector2i(0, 0)
 
@@ -10,10 +7,6 @@ var apple_pos: Vector2i
 var snake: Array[Vector2i]
 
 var lost: bool = false
-
-func _ready() -> void:
-	timer.timeout.connect(update)
-	_start()
 
 
 func _start() -> void:
@@ -24,50 +17,33 @@ func _start() -> void:
 	display()
 
 
-func _process(delta: float) -> void:
-	var coming_from_below: bool = len(snake) > 2 and Vector2i(0, 1) + snake[0] in snake
-	var coming_from_above: bool = len(snake) > 2 and Vector2i(0, -1) + snake[0] in snake
-	var coming_from_left: bool = len(snake) > 2 and Vector2i(-1, 0) + snake[0] in snake
-	var coming_from_right: bool = len(snake) > 2 and Vector2i(1, 0) + snake[0] in snake
+func _update(delta: float) -> void:
+	var coming_from_below: bool = len(snake) > 2 and Vector2i(0, 1) + snake[0] == snake[1]
+	var coming_from_above: bool = len(snake) > 2 and Vector2i(0, -1) + snake[0] == snake[1]
+	var coming_from_left: bool = len(snake) > 2 and Vector2i(-1, 0) + snake[0] == snake[1]
+	var coming_from_right: bool = len(snake) > 2 and Vector2i(1, 0) + snake[0] == snake[1]
 	
 	if Input.is_action_just_pressed("Down") and not coming_from_below:
-		if timer.is_stopped():
-			update()
-			timer.start()
-		
 		move_dir = Vector2i(0, 1)
 	elif Input.is_action_just_pressed("Up") and not coming_from_above:
-		if timer.is_stopped():
-			update()
-			timer.start()
-		
 		move_dir = Vector2i(0, -1)
 	elif Input.is_action_just_pressed("Left") and not coming_from_left:
-		if timer.is_stopped():
-			update()
-			timer.start()
-		
 		move_dir = Vector2i(-1, 0)
 	elif Input.is_action_just_pressed("Right") and not coming_from_right:
-		if timer.is_stopped():
-			update()
-			timer.start()
-		
 		move_dir = Vector2i(1, 0)
 	elif lost and Input.is_action_just_pressed("Reset"):
 		_start()
 
 
-func update() -> void:
+func _fixed_update() -> void:
 	if not lost:
 		move_snake()
 		display()
-	else:
-		timer.stop()
 
 
 func randomize_apple_pos() -> void:
 	apple_pos = Vector2i(randi_range(0, 15), randi_range(0, 15))
+	
 	while apple_pos in snake:
 		apple_pos = Vector2i(randi_range(0, 15), randi_range(0, 15))
 
@@ -132,8 +108,6 @@ func lose() -> void:
 		for y: int in 16:
 			cell_grid.get_cell(x, y).load_char_num(66)
 			cell_grid.get_cell(x, y).set_bg_color(Color(0.1, 0, 0))
-			print(cell_grid.get_cell(x, y).bg_color)
-			print(cell_grid.get_cell(x, y).color)
 
 
 func pos_in_bounds(pos: Vector2i) -> bool:

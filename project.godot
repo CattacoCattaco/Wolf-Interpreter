@@ -11,13 +11,13 @@ config_version=5
 [application]
 
 config/name="WolfInterpreter"
-run/main_scene="uid://drooqsvk2u7us"
+run/main_scene="uid://daua6wcirk8pg"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/godot_super-wakatime/plugin.cfg")
+enabled=PackedStringArray("res://addons/godot_super-wakatime/plugin.cfg", "res://addons/wolfedit/plugin.cfg")
 
 [input]
 

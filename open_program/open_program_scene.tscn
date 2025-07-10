@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3 uid="uid://daua6wcirk8pg"]
+
+[ext_resource type="Script" uid="uid://cun2304gg4oab" path="res://open_program/open_program_scene.gd" id="1_023yp"]
+
+[node name="OpenProgramScene" type="Control" node_paths=PackedStringArray("file_dialog")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_023yp")
+file_dialog = NodePath("FileDialog")
+
+[node name="FileDialog" type="FileDialog" parent="."]
+title = "Open a File"
+initial_position = 1
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.wolf", "*.txt")

@@ -1,9 +1,9 @@
 [gd_scene load_steps=6 format=3 uid="uid://drooqsvk2u7us"]
 
-[ext_resource type="PackedScene" uid="uid://dqfkfo3tt1mbg" path="res://cell_grid/cell/cell.tscn" id="1_80nbo"]
-[ext_resource type="Script" uid="uid://qjud1fkpjgww" path="res://cell_grid/cell_grid.gd" id="1_e2o6t"]
-[ext_resource type="Script" uid="uid://b2gawuec4y5qy" path="res://snake_game.gd" id="1_fc0e3"]
-[ext_resource type="Texture2D" uid="uid://1t5rn58krst4" path="res://cell_grid/chars.png" id="2_feb5d"]
+[ext_resource type="Script" uid="uid://b2gawuec4y5qy" path="res://game/snake_game.gd" id="1_4fuuu"]
+[ext_resource type="PackedScene" uid="uid://dqfkfo3tt1mbg" path="res://game/cell_grid/cell/cell.tscn" id="1_80nbo"]
+[ext_resource type="Script" uid="uid://qjud1fkpjgww" path="res://game/cell_grid/cell_grid.gd" id="1_e2o6t"]
+[ext_resource type="Texture2D" uid="uid://1t5rn58krst4" path="res://game/cell_grid/chars.png" id="2_feb5d"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_fc0e3"]
 atlas = ExtResource("2_feb5d")
@@ -16,7 +16,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_fc0e3")
+script = ExtResource("1_4fuuu")
 timer = NodePath("Timer")
 cell_grid = NodePath("GridRatioifier/CellGrid")
 
@@ -38,4 +38,4 @@ cell_scene = ExtResource("1_80nbo")
 chars = SubResource("AtlasTexture_fc0e3")
 
 [node name="Timer" type="Timer" parent="."]
-wait_time = 0.5
+wait_time = 0.1
