@@ -30,21 +30,22 @@ enum {
 
 	# Keywords
 	AND, OR, XOR, # 42 - 44
-	IF, ELIF, ELSE, # 45 - 47
-	FOR, WHILE, # 48 and 49
-	IN, RANGE, # 50 and 51
-	CLASS, STRUCT, # 52 and 53
-	IS, AS, # 54 and 55
-	RETURN, # 56
-	PRINT, # 57
-	SUPER, # 58
+	NAND, NOR, XNOR, # 45 - 47
+	IF, ELIF, ELSE, # 48 - 50
+	FOR, WHILE, # 51 and 52
+	IN, RANGE, # 53 and 54
+	CLASS, STRUCT, # 55 and 56
+	IS, AS, # 57 and 58
+	RETURN, # 59
+	PRINT, # 60
+	SUPER, # 61
 
 	# We need to keep track of leading whitespace
-	INDENT, # 59
-	OUTDENT, # 60
+	INDENT, # 62
+	OUTDENT, # 63
 
 	# End of file
-	EOF, # 61
+	EOF, # 64
 }
 
 ## Converts from keyword names to their respective token types
@@ -52,6 +53,9 @@ const KEYWORDS: Dictionary[String, int] = {
 	"and": AND,
 	"or": OR,
 	"xor": XOR,
+	"nand": NAND,
+	"nor": NOR,
+	"nxor": XNOR,
 	"if": IF,
 	"elif": ELIF,
 	"else": ELSE,
@@ -74,7 +78,7 @@ var token_type: int
 var lexeme: String
 ## The value of this token if it's a literal
 var literal_value
-## The type of this token if it's a literal
+## The type of this token if it's a literal, always lower case
 var literal_type: String
 ## The line number of this token
 var line_num: int
@@ -85,8 +89,9 @@ func _init(p_token_type: int = 0, p_lexeme: String = "", p_literal_value = null,
 	token_type = p_token_type
 	lexeme = p_lexeme
 	literal_value = p_literal_value
+	literal_type = p_literal_type
 	line_num = p_line_num
 
 
 func _to_string() -> String:
-	return "( %d %s %s %s )" % [token_type, lexeme, literal_type, literal_value]
+	return "( %d %s %s %s )" % [token_type, lexeme, literal_value, literal_type]

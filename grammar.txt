@@ -1,0 +1,24 @@
+expression -> ternary;
+
+ternary -> binLogic "if" binLogic "else" binLogic;
+
+binLogic -> negated (("and" | "or" | "xor" | "&&" | "||" | "^^" | "nand" | "nor" | "xnor") negated)*;
+
+negated -> ("not" | "!") negated
+		| comp;
+
+comp -> bitwise (("==" | "!=" | ">" | "<" | ">=" | "<=") bitwise)*;
+
+bitwise -> term (("<<" | ">>" | "&" | "|" | "^") term)*;
+
+term -> factor (("+" | "-") factor)*;
+
+factor -> unary (("/" | "*" | "%") unary)*;
+
+exp -> factor ("**" factor)*;
+
+unary -> ("-" | "~") unary
+		| primary;
+
+primary -> NUM | STRING | BOOL | NULL
+		| "(" expression ")";

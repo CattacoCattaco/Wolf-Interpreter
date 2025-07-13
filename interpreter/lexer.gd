@@ -40,18 +40,18 @@ func _is_at_end() -> bool:
 	return current >= len(source) - 1
 
 
+## Returns the next char without advancing
+func _peek() -> String:
+	return source[current] if not _is_at_end() else ""
+
+
 ## Move forwards in the code and return the new current char
 func _advance() -> String:
-	var ret_value: String = source[current] if not _is_at_end() else ""
+	var ret_value: String = _peek()
 	
 	current += 1
 	
 	return ret_value
-
-
-## Returns the next char without advancing
-func _peek() -> String:
-	return source[current] if not _is_at_end() else ""
 
 
 ## Add a token to tokens
@@ -470,7 +470,7 @@ func _scan_token() -> void:
 				var identifier: String = c
 				
 				while _is_alphanumeric(_peek()):
-					c += _advance()
+					identifier += _advance()
 				
 				if identifier == "true":
 					_add_token(Token.LITERAL, true, "bool")

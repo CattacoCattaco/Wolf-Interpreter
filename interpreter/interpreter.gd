@@ -9,10 +9,25 @@ func _init() -> void:
 
 
 func run(code: String) -> void:
-	var lexer: Lexer = Lexer.new(code)
+	var lexer := Lexer.new(code)
 	lexer.interpreter = self
 	
 	var tokens: Array[Token] = lexer.scan_tokens()
 	
+	var token_string: String = ""
 	for token: Token in tokens:
-		print(token, " ")
+		token_string += "%s " % token
+	
+	print(token_string)
+	
+	print("\n")
+	
+	var parser := Parser.new(tokens)
+	parser.interpreter = self
+	
+	var expr: Expr = parser.parse()
+	
+	if not expr:
+		return
+	
+	print(expr)
