@@ -14,6 +14,4 @@ func _ready() -> void:
 
 func _file_selected(path: String):
 	wolf_file = FileAccess.open(path, FileAccess.READ)
-	print(wolf_file.get_line())
-	interpreter.errorHandler.error(1, "Bad Thing")
-	interpreter.errorHandler.warn(2, "Odd Thing")
+	interpreter.run(wolf_file.get_as_text())

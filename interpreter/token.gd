@@ -1,6 +1,8 @@
 class_name Token
 extends RefCounted
+## Represents a meaningful unit of Wolf's grammar
 
+## Contains all of the Various token types
 enum {
 	# Parentheses
 	OPEN_PAREN, CLOSE_PAREN, OPEN_BRACE, CLOSE_BRACE, OPEN_BRACKET, CLOSE_BRACKET, # 0 - 5
@@ -12,39 +14,40 @@ enum {
 	MINUS, MINUS_EQUAL, DECREMENT, # 11-13
 	PLUS, PLUS_EQUAL, INCREMENT, # 14-16
 	SLASH, SLASH_EQUAL, # 17 and 18
-	STAR, STAR_EQUAL, # 19 and 20
-	PERCENT, PERCENT_EQUAL, # 21 and 22
-	BIT_AND, BIT_AND_EQUAL, # 23 and 24
-	BIT_OR, BIT_OR_EQUAL, # 25 and 26
-	BIT_XOR, BIT_XOR_EQUAL, # 27 and 28
-	NOT, NOT_EQUAL, # 29 and 30
-	SET_EQUAL, COMP_EQUAL, # 31 and 32
-	LESS, LESS_EQUAL, LEFT_SHIFT, # 33-35
-	MORE, MORE_EQUAL, RIGHT_SHIFT, # 36-38
+	STAR, STAR_EQUAL, EXPONENT, # 19-21
+	PERCENT, PERCENT_EQUAL, # 22 and 23
+	BIT_AND, BIT_AND_EQUAL, # 24 and 25
+	BIT_OR, BIT_OR_EQUAL, # 26 and 27
+	BIT_XOR, BIT_XOR_EQUAL, # 28 and 29
+	NOT, NOT_EQUAL, # 30 and 31
+	SET_EQUAL, COMP_EQUAL, # 32 and 33
+	LESS, LESS_EQUAL, LEFT_SHIFT, # 34-36
+	MORE, MORE_EQUAL, RIGHT_SHIFT, # 37-39
 
 	# Literals and Identifiers
-	LITERAL, # 39
-	IDENTIFIER, # 40
+	LITERAL, # 40
+	IDENTIFIER, # 41
 
 	# Keywords
-	AND, OR, XOR, # 41 - 43
-	IF, ELIF, ELSE, # 44 - 46
-	FOR, WHILE, # 47 and 48
-	IN, RANGE, # 49 and 50
-	CLASS, STRUCT, # 51 and 52
-	IS, AS, # 53 and 54
-	RETURN, # 55
-	PRINT, # 56
-	SUPER, # 57
+	AND, OR, XOR, # 42 - 44
+	IF, ELIF, ELSE, # 45 - 47
+	FOR, WHILE, # 48 and 49
+	IN, RANGE, # 50 and 51
+	CLASS, STRUCT, # 52 and 53
+	IS, AS, # 54 and 55
+	RETURN, # 56
+	PRINT, # 57
+	SUPER, # 58
 
 	# We need to keep track of leading whitespace
-	INDENT, # 58
-	OUTDENT, # 59
+	INDENT, # 59
+	OUTDENT, # 60
 
 	# End of file
-	EOF, # 60
+	EOF, # 61
 }
 
+## Converts from keyword names to their respective token types
 const KEYWORDS: Dictionary[String, int] = {
 	"and": AND,
 	"or": OR,
@@ -65,14 +68,20 @@ const KEYWORDS: Dictionary[String, int] = {
 	"super": SUPER,
 }
 
+## This token's type
 var token_type: int
+## The characters that made this token
 var lexeme: String
+## The value of this token if it's a literal
 var literal_value
+## The type of this token if it's a literal
+var literal_type: String
+## The line number of this token
 var line_num: int
 
 
 func _init(p_token_type: int = 0, p_lexeme: String = "", p_literal_value = null, 
-		p_line_num: int = 0) -> void:
+		p_literal_type: String = "", p_line_num: int = 0) -> void:
 	token_type = p_token_type
 	lexeme = p_lexeme
 	literal_value = p_literal_value
@@ -80,4 +89,4 @@ func _init(p_token_type: int = 0, p_lexeme: String = "", p_literal_value = null,
 
 
 func _to_string() -> String:
-	return "( %d %s %s )" % [token_type, lexeme, literal_value]
+	return "( %d %s %s %s )" % [token_type, lexeme, literal_type, literal_value]
