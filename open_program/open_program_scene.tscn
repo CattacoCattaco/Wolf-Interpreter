@@ -1,8 +1,17 @@
-[gd_scene load_steps=2 format=3 uid="uid://daua6wcirk8pg"]
+[gd_scene load_steps=8 format=3 uid="uid://daua6wcirk8pg"]
 
 [ext_resource type="Script" uid="uid://cun2304gg4oab" path="res://open_program/open_program_scene.gd" id="1_023yp"]
+[ext_resource type="Script" uid="uid://d3rknkb2c67bb" path="res://game/game.gd" id="2_yxl0w"]
+[ext_resource type="Script" uid="uid://qjud1fkpjgww" path="res://game/cell_grid/cell_grid.gd" id="3_4hq04"]
+[ext_resource type="PackedScene" uid="uid://dqfkfo3tt1mbg" path="res://game/cell_grid/cell/cell.tscn" id="4_6i576"]
+[ext_resource type="Texture2D" uid="uid://1t5rn58krst4" path="res://game/cell_grid/chars.png" id="5_d4i4x"]
+[ext_resource type="Script" uid="uid://c3ifr7o1jca3d" path="res://interpreter/console.gd" id="6_4hq04"]
 
-[node name="OpenProgramScene" type="Control" node_paths=PackedStringArray("file_dialog")]
+[sub_resource type="AtlasTexture" id="AtlasTexture_nrdvb"]
+atlas = ExtResource("5_d4i4x")
+region = Rect2(0, 0, 6, 6)
+
+[node name="OpenProgramScene" type="Control" node_paths=PackedStringArray("_file_dialog", "_console", "_code_edit", "_open_from_file_button", "_run_button", "_clear_console_button")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,7 +19,12 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_023yp")
-file_dialog = NodePath("FileDialog")
+_file_dialog = NodePath("FileDialog")
+_console = NodePath("HSplitContainer/Console/VBoxContainer2/Console")
+_code_edit = NodePath("HSplitContainer/Program/VBoxContainer/CodeEdit")
+_open_from_file_button = NodePath("HSplitContainer/Program/VBoxContainer/ButtonContainer/OpenFromFileButton")
+_run_button = NodePath("HSplitContainer/Program/VBoxContainer/ButtonContainer/RunButton")
+_clear_console_button = NodePath("HSplitContainer/Console/VBoxContainer2/ButtonContainer/ClearButton")
 
 [node name="FileDialog" type="FileDialog" parent="."]
 title = "Open a File"
@@ -20,3 +34,100 @@ file_mode = 0
 access = 2
 filters = PackedStringArray("*.wolf", "*.txt")
 use_native_dialog = true
+
+[node name="Game" type="Control" parent="." node_paths=PackedStringArray("timer", "cell_grid")]
+visible = false
+layout_mode = 2
+anchors_preset = 0
+offset_left = 582.0
+offset_right = 1152.0
+offset_bottom = 648.0
+size_flags_horizontal = 3
+script = ExtResource("2_yxl0w")
+timer = NodePath("Timer")
+cell_grid = NodePath("GridRatioifier/CellGrid")
+metadata/_custom_type_script = "uid://d3rknkb2c67bb"
+
+[node name="GridRatioifier" type="AspectRatioContainer" parent="Game"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CellGrid" type="GridContainer" parent="Game/GridRatioifier"]
+layout_mode = 2
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
+columns = 3
+script = ExtResource("3_4hq04")
+cell_scene = ExtResource("4_6i576")
+chars = SubResource("AtlasTexture_nrdvb")
+
+[node name="Timer" type="Timer" parent="Game"]
+wait_time = 0.1
+
+[node name="HSplitContainer" type="HSplitContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Program" type="Control" parent="HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/Program"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ButtonContainer" type="HBoxContainer" parent="HSplitContainer/Program/VBoxContainer"]
+layout_mode = 2
+
+[node name="OpenFromFileButton" type="Button" parent="HSplitContainer/Program/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+text = "Open From File"
+
+[node name="RunButton" type="Button" parent="HSplitContainer/Program/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+text = "Run"
+
+[node name="CodeEdit" type="CodeEdit" parent="HSplitContainer/Program/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+gutters_draw_line_numbers = true
+auto_brace_completion_enabled = true
+
+[node name="Console" type="Control" parent="HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="HSplitContainer/Console"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ButtonContainer" type="HBoxContainer" parent="HSplitContainer/Console/VBoxContainer2"]
+layout_mode = 2
+
+[node name="ClearButton" type="Button" parent="HSplitContainer/Console/VBoxContainer2/ButtonContainer"]
+layout_mode = 2
+text = "Clear"
+
+[node name="Console" type="RichTextLabel" parent="HSplitContainer/Console/VBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+script = ExtResource("6_4hq04")

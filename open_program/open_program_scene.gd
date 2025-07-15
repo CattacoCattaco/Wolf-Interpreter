@@ -1,16 +1,20 @@
 class_name OpenProgramScene
 extends Control
 
-@export var file_dialog: FileDialog
+@export var _file_dialog: FileDialog
+@export var _console: Console
+
+@export var _code_edit: CodeEdit
+
+@export var _open_from_file_button: Button
+@export var _run_button: Button
+@export var _clear_console_button: Button
 
 var wolf_file: FileAccess
 
-var interpreter := Interpreter.new()
+@onready var interpreter := Interpreter.new(_console)
 
 func _ready() -> void:
-	file_dialog.file_selected.connect(_file_selected)
-	file_dialog.show()
-	
 	if OS.has_feature("debug"):
 		interpreter.run("-*7")
 		interpreter.run("-3*7")
@@ -29,9 +33,21 @@ func _ready() -> void:
 		interpreter.run("5 * 7 +")
 		interpreter.run("5 * 7 + ()")
 		interpreter.run("@3 + * 7")
-		interpreter.run("\t \t3 + * 7\n\t")
+	
+	if OS.has_feature("web"):
+		_open_from_file_button.hide()
+	else:
+		_file_dialog.file_selected.connect(_file_selected)
+		_open_from_file_button.pressed.connect(_file_dialog.show)
+	
+	_run_button.pressed.connect(_run)
+	_clear_console_button.pressed.connect(_console.clear)
 
 
 func _file_selected(path: String):
 	wolf_file = FileAccess.open(path, FileAccess.READ)
-	interpreter.run(wolf_file.get_as_text())
+	_code_edit.text = wolf_file.get_as_text()
+
+
+func _run():
+	interpreter.run(_code_edit.text)

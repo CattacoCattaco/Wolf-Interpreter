@@ -1,17 +1,22 @@
 class_name Interpreter
 extends RefCounted
 
+var console: Console
 var error_handler: ErrorHandler
 
 
-func _init() -> void:
+func _init(p_console: Console) -> void:
+	console = p_console
+	console.interpreter = self
+	
 	error_handler = ErrorHandler.new()
+	error_handler.interpreter = self
 
 
 func run(code: String) -> void:
 	error_handler.clear()
 	
-	print("Input: ", code)
+	console.println("Input: " + code)
 	
 	var lexer := Lexer.new(code)
 	lexer.interpreter = self
@@ -28,7 +33,7 @@ func run(code: String) -> void:
 	
 	# Exit early if errors present
 	if error_handler.errors:
-		print("\n")
+		console.println("\n")
 		return
 	
 	var parser := Parser.new(tokens)
@@ -38,15 +43,15 @@ func run(code: String) -> void:
 	
 	# Exit early if errors present
 	if error_handler.errors or not expr:
-		print("\n")
+		console.println("\n")
 		return
 	
-	print("Parsed: ", expr)
+	console.println("Parsed: " + str(expr))
 	
 	var evaluator := Evaluator.new()
 	evaluator.interpreter = self
 	
 	var result = evaluator.evaluate_expr(expr)["value"]
-	print("Result: ", result)
+	console.println("Result: " + str(result))
 	
-	print("\n")
+	console.println("\n")
