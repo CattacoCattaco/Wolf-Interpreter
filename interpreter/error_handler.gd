@@ -28,3 +28,8 @@ func error(line: int, message: String):
 
 func warn(line: int, message: String):
 	report(line, "", message, false)
+
+
+func clear():
+	errors = []
+	warnings = []

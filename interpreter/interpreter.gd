@@ -9,6 +9,8 @@ func _init() -> void:
 
 
 func run(code: String) -> void:
+	error_handler.clear()
+	
 	print("Input: ", code)
 	
 	var lexer := Lexer.new(code)
@@ -24,12 +26,19 @@ func run(code: String) -> void:
 	#
 	#print("\n")
 	
+	# Exit early if errors present
+	if error_handler.errors:
+		print("\n")
+		return
+	
 	var parser := Parser.new(tokens)
 	parser.interpreter = self
 	
 	var expr: Expr = parser.parse()
 	
-	if not expr:
+	# Exit early if errors present
+	if error_handler.errors or not expr:
+		print("\n")
 		return
 	
 	print("Parsed: ", expr)

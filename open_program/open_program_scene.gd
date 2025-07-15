@@ -11,6 +11,7 @@ func _ready() -> void:
 	file_dialog.file_selected.connect(_file_selected)
 	file_dialog.show()
 	
+	interpreter.run("-*7")
 	interpreter.run("-3*7")
 	interpreter.run("-3+7")
 	interpreter.run("(7-3) % 5")
@@ -21,6 +22,12 @@ func _ready() -> void:
 	interpreter.run("'a' * 6 + 5 / 3")
 	interpreter.run("'a' * 6 + 5 / 3.0")
 	interpreter.run("true^^true")
+	interpreter.run("1 < 3 nor 2 == 2")
+	interpreter.run("1 < 3 xnor 2 == 2")
+	interpreter.run("or 3")
+	interpreter.run("5 * 7 +")
+	interpreter.run("5 * 7 + ()")
+	interpreter.run("@3 + * 7")
 
 
 func _file_selected(path: String):

@@ -21,6 +21,7 @@ var last_line_white_space: String = ""
 
 ## What layer of parentheses/brackets/curly braces are we in?
 var paren_layer: int = 0
+var paren_start_line: int = 0
 
 ## Checks if a string has a digit
 var digit_regex := RegEx.create_from_string("[0-9]")
@@ -101,9 +102,6 @@ func _scan_token() -> void:
 			_add_token(Token.CLOSE_PAREN)
 			
 			paren_layer -= 1
-			# The paren layer being negative would indicate that there was no opening paren
-			if paren_layer < 0:
-				interpreter.error_handler.error(line, "Unexpected closing paren ')'")
 		"[":
 			# Opening paren character, simple one char token but needs to increase paren_layer
 			_check_no_lead_white_space()
@@ -116,9 +114,6 @@ func _scan_token() -> void:
 			_add_token(Token.CLOSE_BRACKET)
 			
 			paren_layer -= 1
-			# The paren layer being negative would indicate that there was no opening paren
-			if paren_layer < 0:
-				interpreter.error_handler.error(line, "Unexpected closing paren ']'")
 		"{":
 			# Opening paren character, simple one char token but needs to increase paren_layer
 			_check_no_lead_white_space()
@@ -131,9 +126,6 @@ func _scan_token() -> void:
 			_add_token(Token.CLOSE_BRACE)
 			
 			paren_layer -= 1
-			# The paren layer being negative would indicate that there was no opening paren
-			if paren_layer < 0:
-				interpreter.error_handler.error(line, "Unexpected closing paren '}'")
 		",":
 			# Simple one char token
 			_check_no_lead_white_space()

@@ -650,7 +650,7 @@ func eval_more_equal(expr: Expr.Binary) -> Dictionary:
 			return left_value
 	
 	return {
-		"value": left_value["value"] > right_value["value"],
+		"value": left_value["value"] >= right_value["value"],
 		"type": "bool",
 	}
 
@@ -688,7 +688,7 @@ func eval_less(expr: Expr.Binary) -> Dictionary:
 			return left_value
 	
 	return {
-		"value": left_value["value"] > right_value["value"],
+		"value": left_value["value"] < right_value["value"],
 		"type": "bool",
 	}
 
@@ -726,7 +726,7 @@ func eval_less_equal(expr: Expr.Binary) -> Dictionary:
 			return left_value
 	
 	return {
-		"value": left_value["value"] > right_value["value"],
+		"value": left_value["value"] <= right_value["value"],
 		"type": "bool",
 	}
 
