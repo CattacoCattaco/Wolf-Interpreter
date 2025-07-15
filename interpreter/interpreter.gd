@@ -52,6 +52,7 @@ func run(code: String) -> void:
 	evaluator.interpreter = self
 	
 	var result = evaluator.evaluate_expr(expr)["value"]
-	console.println("Result: " + str(result))
+	if not error_handler.errors:
+		console.println("Result: " + str(result))
 	
 	console.println("\n")
