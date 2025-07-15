@@ -351,15 +351,15 @@ func _scan_token() -> void:
 						interpreter.error_handler.warn(line, "Mixed tabs and spaces")
 				
 				var current_has_last: bool = white_space in last_line_white_space
-				var last_has_current: bool = white_space in last_line_white_space
+				var last_has_current: bool = last_line_white_space in white_space
 				
-				if current_has_last and not last_has_current:
+				if (current_has_last or white_space == "") and not last_has_current:
 					# We must have added indentation
 					_add_token(Token.INDENT)
-				elif current_has_last and not last_has_current:
+				elif (last_has_current or last_line_white_space == "") and not current_has_last:
 					# We must have removed indentation
 					_add_token(Token.OUTDENT)
-				elif current_has_last and last_has_current:
+				elif white_space == last_line_white_space:
 					# Indentation wasn't added nor was it removed
 					pass
 				else:

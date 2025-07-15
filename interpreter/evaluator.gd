@@ -574,7 +574,7 @@ func eval_modulo(expr: Expr.Binary) -> Dictionary:
 			return left_value
 	
 	return {
-		"value": left_value["value"] % right_value["value"],
+		"value": fposmod(left_value["value"], right_value["value"]),
 		"type": type,
 	}
 
