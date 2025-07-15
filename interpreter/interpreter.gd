@@ -16,20 +16,20 @@ func _init(p_console: Console) -> void:
 func run(code: String) -> void:
 	error_handler.clear()
 	
-	console.println("Input: " + code)
+	if OS.has_feature("debug"):
+		console.println("Input: " + code)
 	
 	var lexer := Lexer.new(code)
 	lexer.interpreter = self
 	
 	var tokens: Array[Token] = lexer.scan_tokens()
 	
-	#var token_string: String = ""
-	#for token: Token in tokens:
-		#token_string += "%s " % token
-	#
-	#print(token_string)
-	#
-	#print("\n")
+	if OS.has_feature("debug"):
+		var token_string: String = "Tokens: "
+		for token: Token in tokens:
+			token_string += "%s " % token
+		
+		console.println(token_string)
 	
 	# Exit early if errors present
 	if error_handler.errors:
@@ -46,7 +46,8 @@ func run(code: String) -> void:
 		console.println("\n")
 		return
 	
-	console.println("Parsed: " + str(expr))
+	if OS.has_feature("debug"):
+		console.println("Parsed: " + str(expr))
 	
 	var evaluator := Evaluator.new()
 	evaluator.interpreter = self
