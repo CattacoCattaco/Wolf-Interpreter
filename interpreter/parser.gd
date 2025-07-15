@@ -34,6 +34,9 @@ func _primary() -> Expr:
 		return Expr.Literal.new(_advance())
 	
 	if _peek().token_type == Token.OPEN_PAREN:
+		# Consume openning paren
+		_advance()
+		
 		var expr: Expr = _expression()
 		
 		if _peek().token_type == Token.CLOSE_PAREN:
@@ -46,6 +49,7 @@ func _primary() -> Expr:
 			interpreter.error_handler.error(_peek().line_num, "Unclosed parentheses")
 			return null
 	
+	_advance()
 	interpreter.error_handler.error(_peek().line_num, "Expression expected")
 	
 	return null

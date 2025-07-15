@@ -37,7 +37,7 @@ func _init(code: String) -> void:
 
 ## Are we at the end of the code?
 func _is_at_end() -> bool:
-	return current >= len(source) - 1
+	return current >= len(source)
 
 
 ## Returns the next char without advancing

@@ -65,13 +65,13 @@ class Grouping:
 	extends Expr
 	
 	## The expression which was grouped
-	var expr: Expr
+	var grouped_expr: Expr
 	
-	func _init(p_expr: Expr) -> void:
-		expr = p_expr
+	func _init(p_grouped_expr: Expr) -> void:
+		grouped_expr = p_grouped_expr
 	
 	func _to_string() -> String:
-		return "(%s)" % expr
+		return "(%s)" % grouped_expr
 
 
 ## Represents a literal: a string, char, bool, int, float, or null
