@@ -15,8 +15,12 @@ func _ready() -> void:
 	interpreter.run("-3+7")
 	interpreter.run("(7-3) % 5")
 	interpreter.run("\"B\"+\"o\"+\"b\"")
-	interpreter.run("12 or 4")
+	interpreter.run("12 || 4")
 	interpreter.run("0 or 4")
+	interpreter.run("'a' + 1")
+	interpreter.run("'a' * 6 + 5 / 3")
+	interpreter.run("'a' * 6 + 5 / 3.0")
+	interpreter.run("true^^true")
 
 
 func _file_selected(path: String):

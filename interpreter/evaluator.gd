@@ -178,9 +178,6 @@ func eval_nand(expr: Expr.Binary) -> Dictionary:
 	var left_truthy: bool = is_truthy(left_value["value"], left_value["type"])
 	var right_truthy: bool = is_truthy(right_value["value"], right_value["type"])
 	
-	var at_least_one: bool = left_truthy or right_truthy
-	var both: bool = left_truthy and right_truthy
-	
 	return {
 		"value": not (left_truthy and right_truthy),
 		"type": "bool",
@@ -193,9 +190,6 @@ func eval_nor(expr: Expr.Binary) -> Dictionary:
 	
 	var left_truthy: bool = is_truthy(left_value["value"], left_value["type"])
 	var right_truthy: bool = is_truthy(right_value["value"], right_value["type"])
-	
-	var at_least_one: bool = left_truthy or right_truthy
-	var both: bool = left_truthy and right_truthy
 	
 	return {
 		"value": not (left_truthy or right_truthy),
