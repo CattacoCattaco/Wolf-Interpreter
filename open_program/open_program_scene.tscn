@@ -11,7 +11,7 @@
 atlas = ExtResource("5_d4i4x")
 region = Rect2(0, 0, 6, 6)
 
-[node name="OpenProgramScene" type="Control" node_paths=PackedStringArray("_file_dialog", "_console", "_code_edit", "_open_from_file_button", "_run_button", "_clear_console_button")]
+[node name="OpenProgramScene" type="Control" node_paths=PackedStringArray("_file_dialog", "_console", "_code_edit", "_open_from_file_button", "_run_button", "_clear_console_button", "_open_manual_button", "_close_manual_button", "manual")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -25,6 +25,9 @@ _code_edit = NodePath("HSplitContainer/Program/VBoxContainer/CodeEdit")
 _open_from_file_button = NodePath("HSplitContainer/Program/VBoxContainer/ButtonContainer/OpenFromFileButton")
 _run_button = NodePath("HSplitContainer/Program/VBoxContainer/ButtonContainer/RunButton")
 _clear_console_button = NodePath("HSplitContainer/Console/VBoxContainer2/ButtonContainer/ClearButton")
+_open_manual_button = NodePath("HSplitContainer/Program/VBoxContainer/ButtonContainer/ManualButton")
+_close_manual_button = NodePath("Manual/CloseManualButton")
+manual = NodePath("Manual")
 
 [node name="FileDialog" type="FileDialog" parent="."]
 title = "Open a File"
@@ -91,6 +94,10 @@ grow_vertical = 2
 [node name="ButtonContainer" type="HBoxContainer" parent="HSplitContainer/Program/VBoxContainer"]
 layout_mode = 2
 
+[node name="ManualButton" type="Button" parent="HSplitContainer/Program/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+text = "Manual"
+
 [node name="OpenFromFileButton" type="Button" parent="HSplitContainer/Program/VBoxContainer/ButtonContainer"]
 layout_mode = 2
 text = "Open From File"
@@ -131,3 +138,258 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 bbcode_enabled = true
 script = ExtResource("6_4hq04")
+
+[node name="Manual" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.27451, 0, 0.627451, 1)
+
+[node name="TabContainer" type="TabContainer" parent="Manual"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+current_tab = 0
+
+[node name="Data Types" type="RichTextLabel" parent="Manual/TabContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "	[font_size=24][b][u]Numerical:[/u][/b][/font_size]
+
+	[b]Int:[/b]
+[ul] Stores an integer
+ Just write some digits without any decimal point and it will be an int
+ Falsey if 0, otherwise truthy[/ul]
+
+	[b]Float:[/b]
+[ul] Stores a floating point number
+ Just write some digits with a decimal point and it will be a float
+ Falsey if 0, otherwise truthy[/ul]
+
+	[b]Char:[/b]
+[ul] Stores an 8 bit integer
+ Also is an ascii character
+ If you put the desired character in single quotes, you will get a char
+ Falsey if 0, otherwise truthy[/ul]
+
+	[font_size=24][b][u]Other:[/u][/b][/font_size]
+	[b]String:[/b]
+[ul] Stores text of any length
+ Wrap the desired text in double quotes to get a string
+ Falsey if empty (\"\"), otherwise truthy[/ul]
+
+	[b]Bool:[/b]
+[ul] Stores a boolean value
+ Just write true or false and it will make a bool
+ Falsey if false, truthy if true[/ul]
+
+	[b]Null:[/b]
+[ul] Is an unset value
+ Just write null and you will get nul
+ Falseyl[/ul]"
+metadata/_tab_index = 0
+
+[node name="Operators" type="RichTextLabel" parent="Manual/TabContainer"]
+visible = false
+layout_mode = 2
+bbcode_enabled = true
+text = "	[font_size=24][b][u]Logical:[/u][/b][/font_size]
+
+	[b]not[/b]
+[ul] Takes a right input
+ Converts input into a boolean and performs a logical not on it
+ Returns a bool[/ul]
+
+	[b]and (also &&)[/b]
+[ul] Takes a left input and a right input
+ Returns left if it is falsey, otherwise returns right
+ Returns input type[/ul]
+
+	[b]or (also ||)[/b]
+[ul] Takes a left input and a right input
+ Returns left if it is truthy, otherwise returns right
+ Returns input type[/ul]
+
+	[b]xor (also ^^)[/b]
+[ul] Takes a left input and a right input
+ Converts inputs into booleans and performs a logical xor on them
+ Returns a bool[/ul]
+
+	[b]nand[/b]
+[ul] Takes a left input and a right input
+ Converts inputs into booleans and performs a logical nand on them
+ Returns a bool[/ul]
+
+	[b]nor[/b]
+[ul] Takes a left input and a right input
+ Converts inputs into booleans and performs a logical nor on them
+ Returns a bool[/ul]
+
+	[b]xnor[/b]
+[ul] Takes a left input and a right input
+ Converts inputs into booleans and performs a logical xnor on them
+ Returns a bool[/ul]
+
+	[font_size=24][b][u]Bitwise:[/u][/b][/font_size]
+
+	[b]&[/b]
+[ul] Takes a left input and a right input
+ Inputs must be integers (chars or ints)
+ Does a bitwise and between the bits of the left and the bits of the right
+ Returns an int[/ul]
+
+	[b]|[/b]
+[ul] Takes a left input and a right input
+ Inputs must be integers (chars or ints)
+ Does a bitwise or between the bits of the left and the bits of the right
+ Returns an int[/ul]
+
+	[b]^[/b]
+[ul] Takes a left input and a right input
+ Inputs must be integers (chars or ints)
+ Does a bitwise xor between the bits of the left and the bits of the right
+ Returns an int[/ul]
+
+	[b]<<[/b]
+[ul] Takes a left input and a right input
+ Inputs must be integers (chars or ints)
+ Returns left input shifted right input bits to the left
+ Returns an int[/ul]
+
+	[b]>>[/b]
+[ul] Takes a left input and a right input
+ Inputs must be integers (chars or ints)
+ Returns left input shifted right input bits to the right
+ Returns an int[/ul]
+
+	[font_size=24][b][u]Arithmetic:[/u][/b][/font_size]
+
+	[b]- (unary)[/b]
+[ul] Takes a right input
+ Input must be number (int, float, or char)
+ Returns input with sign flipped (negative becomes positive, postive becomes negative)
+ Returns input type[/ul]
+
+	[b]+ (addition)[/b]
+[ul] Takes a left input and a right input
+ Inputs must be numbers (int, float, or char)
+ Adds right input to left input
+ Returns a float if any input is a float. Otherwise, returns an int[/ul]
+
+	[b]- (binary)[/b]
+[ul] Takes a left input and a right input
+ Inputs must be numbers (int, float, or char)
+ Subtracts right input from left input
+ Returns a float if any input is a float. Otherwise, returns an int[/ul]
+
+	[b]*[/b]
+[ul] Takes a left input and a right input
+ Inputs must be numbers (int, float, or char)
+ Multiplies left input by right input
+ Returns a float if any input is a float. Otherwise, returns an int[/ul]
+
+	[b]/[/b]
+[ul] Takes a left input and a right input
+ Inputs must be numbers (int, float, or char)
+ Divides left input by right input
+ Returns a float if any input is a float. Otherwise, returns an int[/ul]
+
+	[b]**[/b]
+[ul] Takes a left input and a right input
+ Inputs must be numbers (int, float, or char)
+ Returns left input to the power of right input
+ Returns a float if any input is a float. Otherwise, returns an int[/ul]
+
+	[font_size=24][b][u]Comparison:[/u][/b][/font_size]
+
+	[b]>[/b]
+[ul] Takes a left input and a right input
+ Inputs must be numbers (int, float, or char)
+ Returns true if left input is greater than right input. Otherwise, returns false
+ Returns a bool[/ul]
+
+	[b]>=[/b]
+[ul] Takes a left input and a right input
+ Inputs must be numbers (int, float, or char)
+ Returns true if left input is greater than or equal to right input. Otherwise, returns false
+ Returns a bool[/ul]
+
+	[b]<[/b]
+[ul] Takes a left input and a right input
+ Inputs must be numbers (int, float, or char)
+ Returns true if left input is less than right input. Otherwise, returns false
+ Returns a bool[/ul]
+
+	[b]<=[/b]
+[ul] Takes a left input and a right input
+ Inputs must be numbers (int, float, or char)
+ Returns true if left input is less than or equal to right input. Otherwise, returns false
+ Returns a bool[/ul]
+
+	[b]==[/b]
+[ul] Takes a left input and a right input
+ Inputs must both be numbers (int, float, or char) or both be the same type
+ Returns true if left input has the same value as right input. Otherwise, returns false
+ Returns a bool[/ul]
+
+	[b]!=[/b]
+[ul] Takes a left input and a right input
+ Inputs must both be numbers (int, float, or char) or both be the same type
+ Returns true if left input has a different value from right input. Otherwise, returns false
+ Returns a bool[/ul]
+
+	[font_size=24][b][u]Misc:[/u][/b][/font_size]
+
+	[b]+ (concatination)[/b]
+[ul] Takes a left input and a right input
+ Inputs must be strings
+ Appends right input to the end of left input
+ Returns a string[/ul]
+
+	[b]if else[/b]
+[ul] Takes a left input, a middle input, and a right input
+ Left input should be before if, middle input should be between if and else, and right input should be after else
+ Returns left input if middle input is truthy. Otherwise, returns right input
+ Returns input type[/ul]
+
+	[b]()[/b]
+[ul] Takes a middle input
+ Middle input should be between \"(\" and \")\"
+ Returns middle input
+ Returns input type[/ul]"
+metadata/_tab_index = 1
+
+[node name="Operators Precedence" type="RichTextLabel" parent="Manual/TabContainer"]
+visible = false
+layout_mode = 2
+bbcode_enabled = true
+text = "	[font_size=24][b][u]Operators From First Evaluated to Last:[/u][/b][/font_size]
+
+[ul] Literal values (ints, floats, chars, strings, bools, and null), ()
+ - (unary), ~
+ **
+ *, /, %
+ +, - (binary)
+ &, |, ^, <<, >>
+ >, >=, <, <=, ==, !=
+ not (also !)
+ and (also &&), or (also ||), xor (also ^^), nand, nor, xnor
+ if else[/ul]"
+metadata/_tab_index = 2
+
+[node name="CloseManualButton" type="Button" parent="Manual"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -8.0
+offset_bottom = 8.0
+grow_horizontal = 0
+text = "Close"

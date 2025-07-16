@@ -9,6 +9,10 @@ extends Control
 @export var _open_from_file_button: Button
 @export var _run_button: Button
 @export var _clear_console_button: Button
+@export var _open_manual_button: Button
+@export var _close_manual_button: Button
+
+@export var manual: ColorRect
 
 var wolf_file: FileAccess
 
@@ -42,6 +46,8 @@ func _ready() -> void:
 	
 	_run_button.pressed.connect(_run)
 	_clear_console_button.pressed.connect(_console.clear)
+	_open_manual_button.pressed.connect(manual.show)
+	_close_manual_button.pressed.connect(manual.hide)
 
 
 func _file_selected(path: String):

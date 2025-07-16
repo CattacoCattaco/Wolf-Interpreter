@@ -109,6 +109,10 @@ func eval_binary(expr: Expr.Binary) -> Dictionary:
 			return eval_bit_or(expr)
 		Token.BIT_XOR:
 			return eval_bit_xor(expr)
+		Token.LEFT_SHIFT:
+			return eval_left_shift(expr)
+		Token.RIGHT_SHIFT:
+			return eval_right_shift(expr)
 		Token.PLUS:
 			return eval_plus(expr)
 		Token.MINUS:
@@ -217,42 +221,34 @@ func eval_bit_and(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	var type: String
-	# Only nums can be bit anded
+	# Only integers can be bit anded
 	match left_value["type"]:
 		"int":
-			# Assume the result will be an int for now
-			type = "int"
-		"float":
-			# Result should be float
-			type = "float"
+			# Valid
+			pass
 		"char":
-			# Convert value to int and assume the result will be an int for now
+			# Convert value to int
 			left_value["value"] = left_value["value"].unicode_at(0)
-			type = "int"
 		_:
-			var msg: String = "Can not perform bitwise and on non-numerical value"
+			var msg: String = "Can not perform bitwise and on non-integer (char or int) value"
 			interpreter.error_handler.error(expr.op_token.line_num, msg)
 			return left_value
 	
 	match right_value["type"]:
 		"int":
-			# Use type of left
+			# Valid
 			pass
-		"float":
-			# Result should be float
-			type = "float"
 		"char":
-			# Convert value to int and use type of left
+			# Convert value to int
 			left_value["value"] = left_value["value"].unicode_at(0)
 		_:
-			var msg: String = "Can not perform bitwise and on non-numerical value"
+			var msg: String = "Can not perform bitwise and on non-integer (char or int) value"
 			interpreter.error_handler.error(expr.op_token.line_num, msg)
 			return left_value
 	
 	return {
 		"value": left_value["value"] & right_value["value"],
-		"type": type,
+		"type": "int",
 	}
 
 
@@ -260,42 +256,34 @@ func eval_bit_or(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	var type: String
-	# Only nums can be bit orred
+	# Only integers can be bit orred
 	match left_value["type"]:
 		"int":
-			# Assume the result will be an int for now
-			type = "int"
-		"float":
-			# Result should be float
-			type = "float"
+			# Valid
+			pass
 		"char":
-			# Convert value to int and assume the result will be an int for now
+			# Convert value to int
 			left_value["value"] = left_value["value"].unicode_at(0)
-			type = "int"
 		_:
-			var msg: String = "Can not perform bitwise or on non-numerical value"
+			var msg: String = "Can not perform bitwise or on non-integer (char or int) value"
 			interpreter.error_handler.error(expr.op_token.line_num, msg)
 			return left_value
 	
 	match right_value["type"]:
 		"int":
-			# Use type of left
+			# Valid
 			pass
-		"float":
-			# Result should be float
-			type = "float"
 		"char":
-			# Convert value to int and use type of left
+			# Convert value to int
 			left_value["value"] = left_value["value"].unicode_at(0)
 		_:
-			var msg: String = "Can not perform bitwise or on non-numerical value"
+			var msg: String = "Can not perform bitwise or on non-integer (char or int) value"
 			interpreter.error_handler.error(expr.op_token.line_num, msg)
 			return left_value
 	
 	return {
 		"value": left_value["value"] | right_value["value"],
-		"type": type,
+		"type": "int",
 	}
 
 
@@ -303,42 +291,104 @@ func eval_bit_xor(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	var type: String
-	# Only nums can be bit xorred
+	# Only integers can be bit xorred
 	match left_value["type"]:
 		"int":
-			# Assume the result will be an int for now
-			type = "int"
-		"float":
-			# Result should be float
-			type = "float"
+			# Valid
+			pass
 		"char":
-			# Convert value to int and assume the result will be an int for now
+			# Convert value to int
 			left_value["value"] = left_value["value"].unicode_at(0)
-			type = "int"
 		_:
-			var msg: String = "Can not perform bitwise xor on non-numerical value"
+			var msg: String = "Can not perform bitwise xor on non-integer (char or int) value"
 			interpreter.error_handler.error(expr.op_token.line_num, msg)
 			return left_value
 	
 	match right_value["type"]:
 		"int":
-			# Use type of left
+			# Valid
 			pass
-		"float":
-			# Result should be float
-			type = "float"
 		"char":
-			# Convert value to int and use type of left
+			# Convert value to int
 			left_value["value"] = left_value["value"].unicode_at(0)
 		_:
-			var msg: String = "Can not perform bitwise xor on non-numerical value"
+			var msg: String = "Can not perform bitwise xor on non-integer (char or int) value"
 			interpreter.error_handler.error(expr.op_token.line_num, msg)
 			return left_value
 	
 	return {
 		"value": left_value["value"] ^ right_value["value"],
-		"type": type,
+		"type": "int",
+	}
+
+
+func eval_left_shift(expr: Expr.Binary) -> Dictionary:
+	var left_value: Dictionary = evaluate_expr(expr.left)
+	var right_value: Dictionary = evaluate_expr(expr.right)
+	
+	# Only integers can be left shifted
+	match left_value["type"]:
+		"int":
+			# Valid
+			pass
+		"char":
+			# Convert value to int
+			left_value["value"] = left_value["value"].unicode_at(0)
+		_:
+			var msg: String = "Can not perform left shift on non-integer (char or int) value"
+			interpreter.error_handler.error(expr.op_token.line_num, msg)
+			return left_value
+	
+	match right_value["type"]:
+		"int":
+			# Valid
+			pass
+		"char":
+			# Convert value to int
+			left_value["value"] = left_value["value"].unicode_at(0)
+		_:
+			var msg: String = "Can not perform left shift on non-integer (char or int) value"
+			interpreter.error_handler.error(expr.op_token.line_num, msg)
+			return left_value
+	
+	return {
+		"value": left_value["value"] << right_value["value"],
+		"type": "int",
+	}
+
+
+func eval_right_shift(expr: Expr.Binary) -> Dictionary:
+	var left_value: Dictionary = evaluate_expr(expr.left)
+	var right_value: Dictionary = evaluate_expr(expr.right)
+	
+	# Only integers can be right shifted
+	match left_value["type"]:
+		"int":
+			# Valid
+			pass
+		"char":
+			# Convert value to int
+			left_value["value"] = left_value["value"].unicode_at(0)
+		_:
+			var msg: String = "Can not perform right shift on non-integer (char or int) value"
+			interpreter.error_handler.error(expr.op_token.line_num, msg)
+			return left_value
+	
+	match right_value["type"]:
+		"int":
+			# Valid
+			pass
+		"char":
+			# Convert value to int
+			left_value["value"] = left_value["value"].unicode_at(0)
+		_:
+			var msg: String = "Can not perform right shift on non-integer (char or int) value"
+			interpreter.error_handler.error(expr.op_token.line_num, msg)
+			return left_value
+	
+	return {
+		"value": left_value["value"] >> right_value["value"],
+		"type": "int",
 	}
 
 
@@ -910,7 +960,7 @@ func is_truthy(value, type: String) -> bool:
 		"string":
 			return value != ""
 		"char":
-			return false
+			return value.unicode_at(0) == 0
 		"null":
 			return false
 		_:
