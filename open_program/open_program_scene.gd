@@ -37,6 +37,8 @@ func _ready() -> void:
 		interpreter.run("5 * 7 +")
 		interpreter.run("5 * 7 + ()")
 		interpreter.run("@3 + * 7")
+		interpreter.run("5 as bool")
+		interpreter.run("true as int")
 	
 	if OS.has_feature("web"):
 		_open_from_file_button.hide()

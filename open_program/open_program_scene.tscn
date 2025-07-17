@@ -20,7 +20,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_023yp")
 _file_dialog = NodePath("FileDialog")
-_console = NodePath("HSplitContainer/Console/VBoxContainer2/Console")
+_console = NodePath("HSplitContainer/Console/VBoxContainer2/ColorRect/Console")
 _code_edit = NodePath("HSplitContainer/Program/VBoxContainer/CodeEdit")
 _open_from_file_button = NodePath("HSplitContainer/Program/VBoxContainer/ButtonContainer/OpenFromFileButton")
 _run_button = NodePath("HSplitContainer/Program/VBoxContainer/ButtonContainer/RunButton")
@@ -28,6 +28,15 @@ _clear_console_button = NodePath("HSplitContainer/Console/VBoxContainer2/ButtonC
 _open_manual_button = NodePath("HSplitContainer/Program/VBoxContainer/ButtonContainer/ManualButton")
 _close_manual_button = NodePath("Manual/CloseManualButton")
 manual = NodePath("Manual")
+
+[node name="BG" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.21516, 0.1044, 0.36, 1)
 
 [node name="FileDialog" type="FileDialog" parent="."]
 title = "Open a File"
@@ -132,8 +141,18 @@ layout_mode = 2
 layout_mode = 2
 text = "Clear"
 
-[node name="Console" type="RichTextLabel" parent="HSplitContainer/Console/VBoxContainer2"]
+[node name="ColorRect" type="ColorRect" parent="HSplitContainer/Console/VBoxContainer2"]
 layout_mode = 2
+size_flags_vertical = 3
+color = Color(0.202903, 0.1363, 0.29, 1)
+
+[node name="Console" type="RichTextLabel" parent="HSplitContainer/Console/VBoxContainer2/ColorRect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 bbcode_enabled = true
@@ -163,37 +182,43 @@ layout_mode = 2
 bbcode_enabled = true
 text = "	[font_size=24][b][u]Numerical:[/u][/b][/font_size]
 
-	[b]Int:[/b]
+	[b]int:[/b]
 [ul] Stores an integer
  Just write some digits without any decimal point and it will be an int
  Falsey if 0, otherwise truthy[/ul]
 
-	[b]Float:[/b]
+	[b]float:[/b]
 [ul] Stores a floating point number
  Just write some digits with a decimal point and it will be a float
  Falsey if 0, otherwise truthy[/ul]
 
-	[b]Char:[/b]
-[ul] Stores an 8 bit integer
+	[b]char:[/b]
+[ul] Stores an unsigned 8 bit integer
  Also is an ascii character
  If you put the desired character in single quotes, you will get a char
  Falsey if 0, otherwise truthy[/ul]
 
 	[font_size=24][b][u]Other:[/u][/b][/font_size]
-	[b]String:[/b]
+	[b]string:[/b]
 [ul] Stores text of any length
  Wrap the desired text in double quotes to get a string
  Falsey if empty (\"\"), otherwise truthy[/ul]
 
-	[b]Bool:[/b]
+	[b]bool:[/b]
 [ul] Stores a boolean value
  Just write true or false and it will make a bool
  Falsey if false, truthy if true[/ul]
 
-	[b]Null:[/b]
+	[b]null:[/b]
 [ul] Is an unset value
- Just write null and you will get nul
- Falseyl[/ul]"
+ Just write null and you will get null
+ Falsey
+ Values can't be casted to null with as operator[/ul]
+
+	[b]mixed:[/b]
+[ul] Could be of multiple different types depending on operator evaluation
+ Must be cast to different type for use
+ Values can't be declared to be mixed type[/ul]"
 metadata/_tab_index = 0
 
 [node name="Operators" type="RichTextLabel" parent="Manual/TabContainer"]
@@ -273,39 +298,39 @@ text = "	[font_size=24][b][u]Logical:[/u][/b][/font_size]
 
 	[b]- (unary)[/b]
 [ul] Takes a right input
- Input must be number (int, float, or char)
+ Input must be signed number (int or float)
  Returns input with sign flipped (negative becomes positive, postive becomes negative)
- Returns input type[/ul]
+ Returns float if either input is a float. Otherwise, returns int[/ul]
 
 	[b]+ (addition)[/b]
 [ul] Takes a left input and a right input
  Inputs must be numbers (int, float, or char)
  Adds right input to left input
- Returns a float if any input is a float. Otherwise, returns an int[/ul]
+ Returns float if either input is a float. Otherwise, returns int if either input is an int. Otherwise, returns char[/ul]
 
 	[b]- (binary)[/b]
 [ul] Takes a left input and a right input
  Inputs must be numbers (int, float, or char)
  Subtracts right input from left input
- Returns a float if any input is a float. Otherwise, returns an int[/ul]
+ Returns float if either input is a float. Otherwise, returns int if either input is an int. Otherwise, returns char[/ul]
 
 	[b]*[/b]
 [ul] Takes a left input and a right input
  Inputs must be numbers (int, float, or char)
  Multiplies left input by right input
- Returns a float if any input is a float. Otherwise, returns an int[/ul]
+ Returns float if either input is a float. Otherwise, returns int if either input is an int. Otherwise, returns char[/ul]
 
 	[b]/[/b]
 [ul] Takes a left input and a right input
  Inputs must be numbers (int, float, or char)
  Divides left input by right input
- Returns a float if any input is a float. Otherwise, returns an int[/ul]
+ Returns float if either input is a float. Otherwise, returns int if either input is an int. Otherwise, returns char[/ul]
 
 	[b]**[/b]
 [ul] Takes a left input and a right input
  Inputs must be numbers (int, float, or char)
  Returns left input to the power of right input
- Returns a float if any input is a float. Otherwise, returns an int[/ul]
+ Returns float if either input is a float. Otherwise, returns int if either input is an int. Otherwise, returns char[/ul]
 
 	[font_size=24][b][u]Comparison:[/u][/b][/font_size]
 
@@ -359,6 +384,12 @@ text = "	[font_size=24][b][u]Logical:[/u][/b][/font_size]
  Returns left input if middle input is truthy. Otherwise, returns right input
  Returns input type[/ul]
 
+	[b]as[/b]
+[ul] Takes a left input and a type
+ Left input should be a value and type should be on the right
+ Returns left input cast as the given type
+ Returns given type[/ul]
+
 	[b]()[/b]
 [ul] Takes a middle input
  Middle input should be between \"(\" and \")\"
@@ -378,6 +409,7 @@ text = "	[font_size=24][b][u]Operators From First Evaluated to Last:[/u][/b][/fo
  *, /, %
  +, - (binary)
  &, |, ^, <<, >>
+ as
  >, >=, <, <=, ==, !=
  not (also !)
  and (also &&), or (also ||), xor (also ^^), nand, nor, xnor

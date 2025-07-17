@@ -55,6 +55,14 @@ func _primary() -> Expr:
 	return null
 
 
+func _type() -> String:
+	if _peek().token_type == Token.IDENTIFIER:
+		return _advance().lexeme
+	else:
+		interpreter.error_handler.error(_peek().line_num, "Type expected")
+		return "error"
+
+
 func _unary() -> Expr:
 	if _peek().token_type in [Token.BIT_NOT, Token.MINUS]:
 		var op_token: Token = _advance()
@@ -172,6 +180,31 @@ func _bitwise() -> Expr:
 	return expr
 
 
+func _conversion() -> Expr:
+	if _peek().token_type == Token.AS:
+		interpreter.error_handler.error(_peek().line_num, "Binary operator missing left operand")
+		_advance()
+		_conversion()
+		return null
+	
+	var expr: Expr = _bitwise()
+	
+	if not expr:
+		return null
+	
+	while _peek().token_type == Token.AS:
+		var as_line: int = _advance().line_num
+		
+		var conversion_type: String = _type()
+		
+		if conversion_type == "error":
+			return null
+		
+		expr = Expr.Conversion.new(expr, conversion_type, as_line)
+	
+	return expr
+
+
 func _comp() -> Expr:
 	var comp_ops: Array[int] = [
 		Token.COMP_EQUAL, 
@@ -188,14 +221,14 @@ func _comp() -> Expr:
 		_comp()
 		return null
 	
-	var expr: Expr = _bitwise()
+	var expr: Expr = _conversion()
 	
 	if not expr:
 		return null
 	
 	while _peek().token_type in comp_ops:
 		var op_token: Token = _advance()
-		var right: Expr = _bitwise()
+		var right: Expr = _conversion()
 		
 		if not right:
 			return null
@@ -264,7 +297,7 @@ func _ternary() -> Expr:
 		return null
 	
 	if _peek().token_type == Token.IF:
-		_advance()
+		var line_num: int = _advance().line_num
 		var cond: Expr = _bin_logic()
 		
 		if not cond:
@@ -277,7 +310,7 @@ func _ternary() -> Expr:
 			if not false_expr:
 				return null
 			
-			return Expr.Ternary.new(true_expr, cond, false_expr)
+			return Expr.Ternary.new(true_expr, cond, false_expr, line_num)
 		else:
 			interpreter.error_handler.error(_peek().line_num, "Incomplete ternary expression")
 			return null

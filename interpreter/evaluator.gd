@@ -10,6 +10,8 @@ func evaluate_expr(expr: Expr) -> Dictionary:
 		return eval_literal(expr)
 	elif expr is Expr.Grouping:
 		return eval_group(expr.grouped_expr)
+	elif expr is Expr.Conversion:
+		return eval_conversion(expr)
 	elif expr is Expr.Unary:
 		return eval_unary(expr)
 	elif expr is Expr.Binary:
@@ -31,6 +33,75 @@ func eval_group(expr: Expr.Grouping) -> Dictionary:
 	return evaluate_expr(expr.grouped_expr)
 
 
+func eval_conversion(expr: Expr.Conversion) -> Dictionary:
+	var unconverted_result = evaluate_expr(expr.converted_expr)
+	
+	var types: Array[String] = [unconverted_result["type"], expr.new_type]
+	
+	# Already the right type
+	if types[0] == types[1]:
+		return unconverted_result
+	
+	match types[1]:
+		"string":
+			return {
+				"value": str(unconverted_result["value"]),
+				"type": "string",
+			}
+		"int":
+			if types[0] == "float":
+				return {
+					"value": unconverted_result["value"] as int,
+					"type": "int",
+				}
+			elif types[0] == "char":
+				return {
+					"value": unconverted_result["value"].unicode_at(0) & 255,
+					"type": "int",
+				}
+			elif types[0] == "bool":
+				return {
+					"value": 1 if unconverted_result["value"] else 0,
+					"type": "int",
+				}
+		"char":
+			if types[0] in ["int", "float"]:
+				return {
+					"value": char((unconverted_result["value"] as int) & 255),
+					"type": "char",
+				}
+			elif types[0] == "bool":
+				return {
+					"value": char(1) if unconverted_result["value"] else char(0),
+					"type": "char",
+				}
+		"float":
+			if types[0] == "int":
+				return {
+					"value": unconverted_result["value"] as float,
+					"type": "float",
+				}
+			elif types[0] == "char":
+				return {
+					"value": (unconverted_result["value"].unicode_at(0) & 255) as float,
+					"type": "float",
+				}
+			elif types[0] == "bool":
+				return {
+					"value": 1.0 if unconverted_result["value"] else 0.0,
+					"type": "float",
+				}
+		"bool":
+			return {
+				"value": is_truthy(unconverted_result["value"], types[0]),
+				"type": "bool",
+			}
+	
+	var msg: String = "Invalid type conversion from %s to %s" % types
+	interpreter.error_handler.error(expr.line, msg)
+	return {}
+
+
 func eval_unary(expr: Expr.Unary) -> Dictionary:
 	match expr.op_token.token_type:
 		Token.BIT_NOT:
@@ -45,47 +116,33 @@ func eval_unary(expr: Expr.Unary) -> Dictionary:
 
 func eval_bit_not(expr: Expr.Unary) -> Dictionary:
 	var value_to_negate: Dictionary = evaluate_expr(expr.right)
-	# Only ints and floats can be bit notted
-	match value_to_negate["type"]:
-		"int":
-			pass
-		"float":
-			pass
-		_:
-			var msg: String = "Can not perform bitwise not on non-numerical value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return value_to_negate
+	
+	if expr.ret_type == "char":
+		return {
+			"value": char((~value_to_negate["value"].unicode_at(0)) & 255),
+			"type": "char"
+		}
 	
 	return {
-		"value": ~value_to_negate["value"],
-		"type": value_to_negate["type"],
+		"value": ~(value_to_negate["value"]),
+		"type": expr.ret_type,
 	}
 
 
 func eval_not(expr: Expr.Unary) -> Dictionary:
 	var value_to_negate: Dictionary = evaluate_expr(expr.right)
 	return {
-		"value": not is_truthy(value_to_negate["value"], value_to_negate["type"]),
-		"type": value_to_negate["type"],
+		"value": not value_to_negate["value"],
+		"type": "bool",
 	}
 
 
 func eval_unary_minus(expr: Expr.Unary) -> Dictionary:
 	var value_to_invert: Dictionary = evaluate_expr(expr.right)
-	# Only ints and floats can have unary - done on them
-	match value_to_invert["type"]:
-		"int":
-			pass
-		"float":
-			pass
-		_:
-			var msg: String = "Can not perform unary - on non-numerical value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return value_to_invert
 	
 	return {
 		"value": -value_to_invert["value"],
-		"type": value_to_invert["type"],
+		"type": expr.ret_type,
 	}
 
 
@@ -125,6 +182,8 @@ func eval_binary(expr: Expr.Binary) -> Dictionary:
 			return eval_modulo(expr)
 		Token.MORE:
 			return eval_more(expr)
+		Token.EXPONENT:
+			return eval_exponent(expr)
 		Token.MORE_EQUAL:
 			return eval_more_equal(expr)
 		Token.LESS:
@@ -163,11 +222,11 @@ func eval_xor(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	var left_truthy: bool = is_truthy(left_value["value"], left_value["type"])
-	var right_truthy: bool = is_truthy(right_value["value"], right_value["type"])
+	var left: bool = left_value["value"]
+	var right: bool = right_value["value"]
 	
-	var at_least_one: bool = left_truthy or right_truthy
-	var both: bool = left_truthy and right_truthy
+	var at_least_one: bool = left or right
+	var both: bool = left and right
 	
 	return {
 		"value": at_least_one and not both,
@@ -179,11 +238,11 @@ func eval_nand(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	var left_truthy: bool = is_truthy(left_value["value"], left_value["type"])
-	var right_truthy: bool = is_truthy(right_value["value"], right_value["type"])
+	var left: bool = left_value["value"]
+	var right: bool = right_value["value"]
 	
 	return {
-		"value": not (left_truthy and right_truthy),
+		"value": not (left and right),
 		"type": "bool",
 	}
 
@@ -192,11 +251,11 @@ func eval_nor(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	var left_truthy: bool = is_truthy(left_value["value"], left_value["type"])
-	var right_truthy: bool = is_truthy(right_value["value"], right_value["type"])
+	var left: bool = left_value["value"]
+	var right: bool = right_value["value"]
 	
 	return {
-		"value": not (left_truthy or right_truthy),
+		"value": not (left or right),
 		"type": "bool",
 	}
 
@@ -205,11 +264,11 @@ func eval_xnor(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	var left_truthy: bool = is_truthy(left_value["value"], left_value["type"])
-	var right_truthy: bool = is_truthy(right_value["value"], right_value["type"])
+	var left: bool = left_value["value"]
+	var right: bool = right_value["value"]
 	
-	var at_least_one: bool = left_truthy or right_truthy
-	var both: bool = left_truthy and right_truthy
+	var at_least_one: bool = left or right
+	var both: bool = left and right
 	
 	return {
 		"value": both or not at_least_one,
@@ -221,34 +280,16 @@ func eval_bit_and(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	# Only integers can be bit anded
-	match left_value["type"]:
-		"int":
-			# Valid
-			pass
+	var result
+	match expr.left.ret_type:
 		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not perform bitwise and on non-integer (char or int) value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = char(left_value["value"].unicode_at(0) & right_value["value"].unicode_at(0))
 		"int":
-			# Valid
-			pass
-		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not perform bitwise and on non-integer (char or int) value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
+			result = left_value["value"] & right_value["value"]
 	
 	return {
-		"value": left_value["value"] & right_value["value"],
-		"type": "int",
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -256,34 +297,16 @@ func eval_bit_or(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	# Only integers can be bit orred
-	match left_value["type"]:
-		"int":
-			# Valid
-			pass
+	var result
+	match expr.left.ret_type:
 		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not perform bitwise or on non-integer (char or int) value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = char(left_value["value"].unicode_at(0) | right_value["value"].unicode_at(0))
 		"int":
-			# Valid
-			pass
-		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not perform bitwise or on non-integer (char or int) value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
+			result = left_value["value"] | right_value["value"]
 	
 	return {
-		"value": left_value["value"] | right_value["value"],
-		"type": "int",
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -291,34 +314,16 @@ func eval_bit_xor(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	# Only integers can be bit xorred
-	match left_value["type"]:
-		"int":
-			# Valid
-			pass
+	var result
+	match expr.left.ret_type:
 		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not perform bitwise xor on non-integer (char or int) value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = char(left_value["value"].unicode_at(0) ^ right_value["value"].unicode_at(0))
 		"int":
-			# Valid
-			pass
-		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not perform bitwise xor on non-integer (char or int) value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
+			result = left_value["value"] ^ right_value["value"]
 	
 	return {
-		"value": left_value["value"] ^ right_value["value"],
-		"type": "int",
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -326,34 +331,16 @@ func eval_left_shift(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	# Only integers can be left shifted
-	match left_value["type"]:
-		"int":
-			# Valid
-			pass
+	var result
+	match expr.left.ret_type:
 		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not perform left shift on non-integer (char or int) value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = char(left_value["value"].unicode_at(0) << right_value["value"].unicode_at(0))
 		"int":
-			# Valid
-			pass
-		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not perform left shift on non-integer (char or int) value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
+			result = left_value["value"] << right_value["value"]
 	
 	return {
-		"value": left_value["value"] << right_value["value"],
-		"type": "int",
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -361,34 +348,16 @@ func eval_right_shift(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	# Only integers can be right shifted
-	match left_value["type"]:
-		"int":
-			# Valid
-			pass
+	var result
+	match expr.left.ret_type:
 		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not perform right shift on non-integer (char or int) value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = char(left_value["value"].unicode_at(0) >> right_value["value"].unicode_at(0))
 		"int":
-			# Valid
-			pass
-		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not perform right shift on non-integer (char or int) value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
+			result = left_value["value"] >> right_value["value"]
 	
 	return {
-		"value": left_value["value"] >> right_value["value"],
-		"type": "int",
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -396,62 +365,20 @@ func eval_plus(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	var type: String
-	# Only nums can be added and strings can be concatinated
-	match left_value["type"]:
-		"int":
-			# Assume the result will be an int for now
-			type = "int"
-		"float":
-			# Result should be float
-			type = "float"
+	var result
+	match expr.left.ret_type:
 		"char":
-			# Convert value to int and assume the result will be an int for now
-			left_value["value"] = left_value["value"].unicode_at(0)
-			type = "int"
-		"string":
-			# Concatination
-			type = "string"
-		_:
-			var msg: String = "Can not perform + on non-numerical, non-string value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = char(left_value["value"].unicode_at(0) + right_value["value"].unicode_at(0))
 		"int":
-			# Use type of left but it better not be a string
-			if type == "string":
-				var msg: String = "Can not perform additon on int and string"
-				interpreter.error_handler.error(expr.op_token.line_num, msg)
-				return left_value
+			result = left_value["value"] + right_value["value"]
 		"float":
-			# Result should be float but left shouldn't be a string
-			type = "float"
-			
-			if type == "string":
-				var msg: String = "Can not perform additon on float and string"
-				interpreter.error_handler.error(expr.op_token.line_num, msg)
-				return left_value
-		"char":
-			# Convert value to int and use type of right unless it's a string
-			if type == "string":
-				var msg: String = "Can not perform additon on int and string"
-				interpreter.error_handler.error(expr.op_token.line_num, msg)
-				return left_value
-			left_value["value"] = left_value["value"].unicode_at(0)
+			result = left_value["value"] + right_value["value"]
 		"string":
-			if type != "string":
-				var msg: String = "Can not perform additon on %s and string" % type
-				interpreter.error_handler.error(expr.op_token.line_num, msg)
-				return left_value
-		_:
-			var msg: String = "Can not perform + on non-numerical, non-string value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
+			result = left_value["value"] + right_value["value"]
 	
 	return {
-		"value": left_value["value"] + right_value["value"],
-		"type": type,
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -459,42 +386,18 @@ func eval_binary_minus(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	var type: String
-	# Only nums can be subtracted
-	match left_value["type"]:
-		"int":
-			# Assume the result will be an int for now
-			type = "int"
-		"float":
-			# Result should be float
-			type = "float"
+	var result
+	match expr.left.ret_type:
 		"char":
-			# Convert value to int and assume the result will be an int for now
-			left_value["value"] = left_value["value"].unicode_at(0)
-			type = "int"
-		_:
-			var msg: String = "Can not perform subtraction on non-numerical value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = char(left_value["value"].unicode_at(0) - right_value["value"].unicode_at(0))
 		"int":
-			# Use type of left
-			pass
+			result = left_value["value"] - right_value["value"]
 		"float":
-			# Result should be float
-			type = "float"
-		"char":
-			# Convert value to int and use type of left
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not perform subtraction on non-numerical value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
+			result = left_value["value"] - right_value["value"]
 	
 	return {
-		"value": left_value["value"] - right_value["value"],
-		"type": type,
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -502,43 +405,18 @@ func eval_multiply(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	var type: String
-	# Only nums can be multiplied
-	match left_value["type"]:
-		"int":
-			# Assume the result will be an int for now
-			type = "int"
-		"float":
-			# Result should be float
-			type = "float"
+	var result
+	match expr.left.ret_type:
 		"char":
-			# Convert value to int and assume the result will be an int for now
-			left_value["value"] = left_value["value"].unicode_at(0)
-			type = "int"
-		_:
-			var msg: String = "Can not perform multiplication on non-numerical value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = char(left_value["value"].unicode_at(0) * right_value["value"].unicode_at(0))
 		"int":
-			# Use type of left
-			pass
+			result = left_value["value"] * right_value["value"]
 		"float":
-			# Result should be float
-			type = "float"
-		"char":
-			# Convert value to int and use type of left
-			left_value["value"] = left_value["value"].unicode_at(0)
-			type = "int"
-		_:
-			var msg: String = "Can not perform multiplication on non-numerical value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
+			result = left_value["value"] * right_value["value"]
 	
 	return {
-		"value": left_value["value"] * right_value["value"],
-		"type": type,
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -546,42 +424,18 @@ func eval_divide(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	var type: String
-	# Only nums can be divided
-	match left_value["type"]:
-		"int":
-			# Assume the result will be an int for now
-			type = "int"
-		"float":
-			# Result should be float
-			type = "float"
+	var result
+	match expr.left.ret_type:
 		"char":
-			# Convert value to int and assume the result will be an int for now
-			left_value["value"] = left_value["value"].unicode_at(0)
-			type = "int"
-		_:
-			var msg: String = "Can not perform division on non-numerical value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = char(left_value["value"].unicode_at(0) / right_value["value"].unicode_at(0))
 		"int":
-			# Use type of left
-			pass
+			result = left_value["value"] / right_value["value"]
 		"float":
-			# Result should be float
-			type = "float"
-		"char":
-			# Convert value to int and use type of left
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not perform division on non-numerical value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
+			result = left_value["value"] / right_value["value"]
 	
 	return {
-		"value": left_value["value"] / right_value["value"],
-		"type": type,
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -589,43 +443,37 @@ func eval_modulo(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	var type: String
-	# Only nums can have modulo done on them
-	match left_value["type"]:
-		"int":
-			# Assume the result will be an int for now
-			type = "int"
-		"float":
-			# Result should be float
-			type = "float"
+	var result
+	match expr.left.ret_type:
 		"char":
-			# Convert value to int and assume the result will be an int for now
-			left_value["value"] = left_value["value"].unicode_at(0)
-			type = "int"
-		_:
-			var msg: String = "Can not perform modulo on non-numerical value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = char(left_value["value"].unicode_at(0) % right_value["value"].unicode_at(0))
 		"int":
-			# Use type of left
-			pass
+			result = posmod(left_value["value"], right_value["value"])
 		"float":
-			# Result should be float
-			type = "float"
-		"char":
-			# Convert value to int and use type of left
-			left_value["value"] = left_value["value"].unicode_at(0)
-			type = "int"
-		_:
-			var msg: String = "Can not perform modulo on non-numerical value"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
+			result = fposmod(left_value["value"], right_value["value"])
 	
 	return {
-		"value": fposmod(left_value["value"], right_value["value"]),
-		"type": type,
+		"value": result,
+		"type": expr.ret_type,
+	}
+
+
+func eval_exponent(expr: Expr.Binary) -> Dictionary:
+	var left_value: Dictionary = evaluate_expr(expr.left)
+	var right_value: Dictionary = evaluate_expr(expr.right)
+	
+	var result
+	match expr.left.ret_type:
+		"char":
+			result = char(left_value["value"].unicode_at(0) ** right_value["value"].unicode_at(0))
+		"int":
+			result = left_value["value"] ** right_value["value"]
+		"float":
+			result = pow(left_value["value"], right_value["value"])
+	
+	return {
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -633,37 +481,18 @@ func eval_more(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	# Only nums can be compared with >
-	match left_value["type"]:
-		"int":
-			pass
-		"float":
-			pass
+	var result: bool
+	match expr.left.ret_type:
 		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not do > comparison on non-numerical values"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = left_value["value"].unicode_at(0) > right_value["value"].unicode_at(0)
 		"int":
-			# Use type of left
-			pass
+			result = left_value["value"] > right_value["value"]
 		"float":
-			pass
-		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not do > comparison on non-numerical values"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
+			result = left_value["value"] > right_value["value"]
 	
 	return {
-		"value": left_value["value"] > right_value["value"],
-		"type": "bool",
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -671,37 +500,18 @@ func eval_more_equal(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	# Only nums can be compared with >
-	match left_value["type"]:
-		"int":
-			pass
-		"float":
-			pass
+	var result: bool
+	match expr.left.ret_type:
 		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not do > comparison on non-numerical values"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = left_value["value"].unicode_at(0) >= right_value["value"].unicode_at(0)
 		"int":
-			# Use type of left
-			pass
+			result = left_value["value"] >= right_value["value"]
 		"float":
-			pass
-		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not do > comparison on non-numerical values"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
+			result = left_value["value"] >= right_value["value"]
 	
 	return {
-		"value": left_value["value"] >= right_value["value"],
-		"type": "bool",
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -709,37 +519,18 @@ func eval_less(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	# Only nums can be compared with >
-	match left_value["type"]:
-		"int":
-			pass
-		"float":
-			pass
+	var result: bool
+	match expr.left.ret_type:
 		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not do > comparison on non-numerical values"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = left_value["value"].unicode_at(0) < right_value["value"].unicode_at(0)
 		"int":
-			# Use type of left
-			pass
+			result = left_value["value"] < right_value["value"]
 		"float":
-			pass
-		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not do > comparison on non-numerical values"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
+			result = left_value["value"] < right_value["value"]
 	
 	return {
-		"value": left_value["value"] < right_value["value"],
-		"type": "bool",
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -747,37 +538,18 @@ func eval_less_equal(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	# Only nums can be compared with >
-	match left_value["type"]:
-		"int":
-			pass
-		"float":
-			pass
+	var result: bool
+	match expr.left.ret_type:
 		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not do > comparison on non-numerical values"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = left_value["value"].unicode_at(0) <= right_value["value"].unicode_at(0)
 		"int":
-			# Use type of left
-			pass
+			result = left_value["value"] <= right_value["value"]
 		"float":
-			pass
-		"char":
-			# Convert value to int
-			left_value["value"] = left_value["value"].unicode_at(0)
-		_:
-			var msg: String = "Can not do > comparison on non-numerical values"
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
+			result = left_value["value"] <= right_value["value"]
 	
 	return {
-		"value": left_value["value"] <= right_value["value"],
-		"type": "bool",
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -785,78 +557,24 @@ func eval_comp_equal(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	var new_left: Dictionary
-	var new_right: Dictionary
-	
-	# Only ints and floats can be compared with >
-	match left_value["type"]:
-		"int":
-			# Convert all nums to floats for comparison
-			new_left = {
-				"value": left_value["value"] as float,
-				"type": "float",
-			}
+	var result: bool
+	match expr.left.ret_type:
 		"char":
-			# Convert all nums to floats for comparison
-			new_left = {
-				"value": left_value["value"].unicode_at(0) as int as float,
-				"type": "float",
-			}
-		"float":
-			# No conversion needed
-			new_left = left_value
-		"string":
-			# No conversion needed
-			new_left = left_value
-		"bool":
-			# No conversion needed
-			new_left = left_value
-		"null":
-			# No conversion needed
-			new_left = left_value
-		_:
-			var msg: String = "Unknown type in == comparison: " % left_value["type"]
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = left_value["value"].unicode_at(0) == right_value["value"].unicode_at(0)
 		"int":
-			# Convert all nums to floats for comparison
-			new_right = {
-				"value": right_value["value"] as float,
-				"type": "float",
-			}
-		"char":
-			# Convert all nums to floats for comparison
-			new_right = {
-				"value": right_value["value"].unicode_at(0) as float,
-				"type": "float",
-			}
+			result = left_value["value"] == right_value["value"]
 		"float":
-			# No conversion needed
-			new_right = right_value
+			result = left_value["value"] == right_value["value"]
 		"string":
-			# No conversion needed
-			new_right = right_value
+			result = left_value["value"] == right_value["value"]
 		"bool":
-			# No conversion needed
-			new_right = right_value
+			result = left_value["value"] == right_value["value"]
 		"null":
-			# No conversion needed
-			new_right = right_value
-		_:
-			var msg: String = "Unknown type in == comparison: " % left_value["type"]
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	if new_left["type"] != new_right["type"]:
-		var msg: String = "Equals comparison type mismatch"
-		interpreter.error_handler.error(expr.op_token.line_num, msg)
-		return left_value
+			result = true
 	
 	return {
-		"value": left_value["value"] == right_value["value"],
-		"type": "bool",
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
@@ -864,84 +582,30 @@ func eval_not_equal(expr: Expr.Binary) -> Dictionary:
 	var left_value: Dictionary = evaluate_expr(expr.left)
 	var right_value: Dictionary = evaluate_expr(expr.right)
 	
-	var new_left: Dictionary
-	var new_right: Dictionary
-	
-	# Only ints and floats can be compared with >
-	match left_value["type"]:
-		"int":
-			# Convert all nums to floats for comparison
-			new_left = {
-				"value": left_value["value"] as float,
-				"type": "float",
-			}
+	var result: bool
+	match expr.left.ret_type:
 		"char":
-			# Convert all nums to floats for comparison
-			new_left = {
-				"value": left_value["value"].unicode_at(0) as int as float,
-				"type": "float",
-			}
-		"float":
-			# No conversion needed
-			new_left = left_value
-		"string":
-			# No conversion needed
-			new_left = left_value
-		"bool":
-			# No conversion needed
-			new_left = left_value
-		"null":
-			# No conversion needed
-			new_left = left_value
-		_:
-			var msg: String = "Unknown type in != comparison: " % left_value["type"]
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	match right_value["type"]:
+			result = left_value["value"].unicode_at(0) != right_value["value"].unicode_at(0)
 		"int":
-			# Convert all nums to floats for comparison
-			new_right = {
-				"value": right_value["value"] as float,
-				"type": "float",
-			}
-		"char":
-			# Convert all nums to floats for comparison
-			new_right = {
-				"value": right_value["value"].unicode_at(0) as float,
-				"type": "float",
-			}
+			result = left_value["value"] != right_value["value"]
 		"float":
-			# No conversion needed
-			new_right = right_value
+			result = left_value["value"] != right_value["value"]
 		"string":
-			# No conversion needed
-			new_right = right_value
+			result = left_value["value"] != right_value["value"]
 		"bool":
-			# No conversion needed
-			new_right = right_value
+			result = left_value["value"] != right_value["value"]
 		"null":
-			# No conversion needed
-			new_right = right_value
-		_:
-			var msg: String = "Unknown type in != comparison: " % left_value["type"]
-			interpreter.error_handler.error(expr.op_token.line_num, msg)
-			return left_value
-	
-	if new_left["type"] != new_right["type"]:
-		var msg: String = "Not equal comparison type mismatch"
-		interpreter.error_handler.error(expr.op_token.line_num, msg)
-		return left_value
+			result = false
 	
 	return {
-		"value": left_value["value"] != right_value["value"],
-		"type": "bool",
+		"value": result,
+		"type": expr.ret_type,
 	}
 
 
 func eval_ternary(expr: Expr.Ternary) -> Dictionary:
 	var cond_eval: Dictionary = evaluate_expr(expr.cond)
-	var cond_met: bool = is_truthy(cond_eval["value"], cond_eval["type"])
+	var cond_met: bool = cond_eval["value"]
 	
 	var true_value: Dictionary = evaluate_expr(expr.true_exp)
 	var false_value: Dictionary = evaluate_expr(expr.false_exp)

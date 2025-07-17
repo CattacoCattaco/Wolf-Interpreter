@@ -7,7 +7,9 @@ binLogic -> negated (("and" | "or" | "xor" | "&&" | "||" | "^^" | "nand" | "nor"
 negated -> ("not" | "!") negated
 		| comp;
 
-comp -> bitwise (("==" | "!=" | ">" | "<" | ">=" | "<=") bitwise)*;
+comp -> conversion (("==" | "!=" | ">" | "<" | ">=" | "<=") conversion)*;
+
+conversion -> bitwise ("as" type)*;
 
 bitwise -> term (("<<" | ">>" | "&" | "|" | "^") term)*;
 
@@ -19,6 +21,8 @@ exp -> factor ("**" factor)*;
 
 unary -> ("-" | "~") unary
 		| primary;
+
+type -> TYPE
 
 primary -> NUM | STRING | BOOL | NULL
 		| "(" expression ")";

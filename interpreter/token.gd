@@ -55,7 +55,7 @@ const KEYWORDS: Dictionary[String, int] = {
 	"xor": XOR,
 	"nand": NAND,
 	"nor": NOR,
-	"nxor": XNOR,
+	"xnor": XNOR,
 	"if": IF,
 	"elif": ELIF,
 	"else": ELSE,

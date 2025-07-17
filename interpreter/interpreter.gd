@@ -49,11 +49,26 @@ func run(code: String) -> void:
 	if OS.has_feature("debug"):
 		console.println("Parsed: " + str(expr))
 	
+	var typer := Typer.new()
+	typer.interpreter = self
+	
+	var typed_expr: Expr = typer.type_check(expr)
+	
+	# Exit early if errors present
+	if error_handler.errors:
+		console.println("\n")
+		return
+	
+	if OS.has_feature("debug"):
+		console.println("Typed: " + str(typed_expr))
+	
 	var evaluator := Evaluator.new()
 	evaluator.interpreter = self
 	
-	var result = evaluator.evaluate_expr(expr)["value"]
+	var result: Dictionary = evaluator.evaluate_expr(typed_expr)
+	
 	if not error_handler.errors:
-		console.println("Result: " + str(result))
+		if result.has("value"):
+			console.println("Result: " + str(result["value"]))
 	
 	console.println("\n")
