@@ -1,4 +1,17 @@
-expression -> ternary;
+program -> statement* EOF;
+
+statement -> expressionStatement
+			| printStatement
+			| declarationStatement;
+
+expressionStatement -> expression "\n";
+printStatement -> "print" "(" expression ")" "\n";
+declarationStatement -> TYPE IDENTIFIER ("=" expression)? "\n";
+
+expression -> assignment;
+
+assignment -> IDENTIFIER "=" ternary
+			| ternary;
 
 ternary -> binLogic "if" binLogic "else" binLogic;
 
@@ -9,7 +22,7 @@ negated -> ("not" | "!") negated
 
 comp -> conversion (("==" | "!=" | ">" | "<" | ">=" | "<=") conversion)*;
 
-conversion -> bitwise ("as" type)*;
+conversion -> bitwise ("as" TYPE)*;
 
 bitwise -> term (("<<" | ">>" | "&" | "|" | "^") term)*;
 
@@ -22,7 +35,6 @@ exp -> factor ("**" factor)*;
 unary -> ("-" | "~") unary
 		| primary;
 
-type -> TYPE
-
 primary -> NUM | STRING | BOOL | NULL
-		| "(" expression ")";
+		| "(" expression ")"
+		| IDENTIFIER;

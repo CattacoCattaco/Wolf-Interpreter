@@ -5,6 +5,24 @@ extends RefCounted
 var ret_type: String
 
 
+## Represents a variable assignment
+class Assignment:
+	extends Expr
+	
+	## The token which has the variable name
+	var name_token: Token
+	var op_token: Token
+	var value_expr: Expr
+	
+	func _init(p_name_token: Token, p_op_token: Token, p_value_expr: Expr) -> void:
+		name_token = p_name_token
+		op_token = p_op_token
+		value_expr = p_value_expr
+	
+	func _to_string() -> String:
+		return "%s %s %s" % [name_token.lexeme, op_token.lexeme, value_expr]
+
+
 ## Represents an expression using the ternary operator: a if cond else b
 class Ternary:
 	extends Expr
@@ -100,6 +118,20 @@ class Grouping:
 	
 	func _to_string() -> String:
 		return "(%s)" % grouped_expr
+
+
+## Represents a variable
+class Variable:
+	extends Expr
+	
+	## The token which has the variable name
+	var name_token: Token
+	
+	func _init(p_name_token: Token) -> void:
+		name_token = p_name_token
+	
+	func _to_string() -> String:
+		return name_token.lexeme
 
 
 ## Represents a literal: a string, char, bool, int, float, or null

@@ -192,7 +192,13 @@ func _scan_token() -> void:
 				_add_token(Token.STAR_EQUAL)
 			elif next == "*":
 				_advance()
-				_add_token(Token.EXPONENT)
+				next = _peek()
+				
+				if next == "=":
+					_advance()
+					_add_token(Token.EXPONENT_EQUAL)
+				else:
+					_add_token(Token.EXPONENT)
 			else:
 				_add_token(Token.STAR)
 		"%":
@@ -281,7 +287,13 @@ func _scan_token() -> void:
 				_add_token(Token.LESS_EQUAL)
 			elif next == "<":
 				_advance()
-				_add_token(Token.LEFT_SHIFT)
+				next = _peek()
+				
+				if next == "=":
+					_advance()
+					_add_token(Token.LEFT_SHIFT_EQUAL)
+				else:
+					_add_token(Token.LEFT_SHIFT)
 			else:
 				_add_token(Token.LESS)
 		">":
@@ -295,7 +307,13 @@ func _scan_token() -> void:
 				_add_token(Token.MORE_EQUAL)
 			elif next == ">":
 				_advance()
-				_add_token(Token.RIGHT_SHIFT)
+				next = _peek()
+				
+				if next == "=":
+					_advance()
+					_add_token(Token.RIGHT_SHIFT_EQUAL)
+				else:
+					_add_token(Token.RIGHT_SHIFT)
 			else:
 				_add_token(Token.MORE)
 		"#":
@@ -472,6 +490,8 @@ func _scan_token() -> void:
 					_add_token(Token.LITERAL, null, "null")
 				elif identifier in Token.KEYWORDS:
 					_add_token(Token.KEYWORDS[identifier])
+				elif identifier in Typer.DATA_TYPES:
+					_add_token(Token.DATA_TYPE)
 				else:
 					_add_token(Token.IDENTIFIER)
 			else:

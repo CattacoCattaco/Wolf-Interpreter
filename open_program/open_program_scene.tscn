@@ -119,6 +119,7 @@ text = "Run"
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+text = "print(\"Hello \" + \"world\")"
 gutters_draw_line_numbers = true
 auto_brace_completion_enabled = true
 
@@ -213,12 +214,12 @@ text = "	[font_size=24][b][u]Numerical:[/u][/b][/font_size]
 [ul] Is an unset value
  Just write null and you will get null
  Falsey
- Values can't be casted to null with as operator[/ul]
+ Values can't be casted to null or declared as null[/ul]
 
 	[b]mixed:[/b]
 [ul] Could be of multiple different types depending on operator evaluation
  Must be cast to different type for use
- Values can't be declared to be mixed type[/ul]"
+ Values can't be casted to mixed or declared as mixed[/ul]"
 metadata/_tab_index = 0
 
 [node name="Operators" type="RichTextLabel" parent="Manual/TabContainer"]

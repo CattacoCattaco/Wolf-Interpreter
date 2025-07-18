@@ -1,18 +1,73 @@
 class_name Typer
 extends RefCounted
 
+const DATA_TYPES: Array[String] = [
+	"int",
+	"char",
+	"float",
+	"string",
+	"bool",
+	"null",
+	"mixed",
+]
+
 ## A reference to the interpreter which created this
 var interpreter: Interpreter
 
 
-func type_check(expr: Expr) -> Expr:
-	get_type(expr)
-	return expr
+func type_check_statements(statements: Array[Statement]) -> void:
+	for statement in statements:
+		type_check_statement(statement)
+
+
+func type_check_statement(statement: Statement) -> void:
+	if statement is Statement.Print:
+		type_check_print_statement(statement)
+	elif statement is Statement.Declaration:
+		type_check_declaration_statement(statement)
+	elif statement is Statement.ExprStmt:
+		type_check_expr_statement(statement)
+
+
+func type_check_expr_statement(statement: Statement.ExprStmt) -> void:
+	get_type(statement.expr)
+	return
+
+
+func type_check_print_statement(statement: Statement.Print) -> void:
+	get_type(statement.expr)
+	return
+
+
+func type_check_declaration_statement(statement: Statement.Declaration) -> void:
+	if statement.initializer:
+		var value_type: String = get_type(statement.initializer)
+		
+		if value_type != statement.data_type:
+			var value_is_num: bool = value_type in ["int", "char", "float"]
+			var var_is_num: bool = statement.data_type in ["int", "char", "float"]
+			
+			if value_is_num and var_is_num:
+				var old_init: Expr = statement.initializer
+				var data_type: String = statement.data_type
+				var line_num: int = statement.line_start
+				
+				statement.initializer = Expr.Conversion.new(old_init, data_type, line_num)
+				return
+			
+			var msg: String = "Cannot set variable of type %s to value of type %s"
+			msg = msg % [statement.data_type, value_type]
+			interpreter.error_handler.error(statement.line_start, msg)
+	return
 
 
 func get_type(expr: Expr) -> String:
 	if expr is Expr.Literal:
 		return get_literal_type(expr)
+	elif expr is Expr.Variable:
+		return get_variable_type(expr)
+	elif expr is Expr.Variable:
+		return get_variable_type(expr)
 	elif expr is Expr.Grouping:
 		return get_grouped_type(expr)
 	elif expr is Expr.Conversion:
@@ -23,6 +78,8 @@ func get_type(expr: Expr) -> String:
 		return get_binary_type(expr)
 	elif expr is Expr.Ternary:
 		return get_ternary_type(expr)
+	elif expr is Expr.Assignment:
+		return get_assignment_type(expr)
 	return ""
 
 
@@ -31,6 +88,13 @@ func get_literal_type(expr: Expr.Literal) -> String:
 	
 	expr.ret_type = literal_type
 	return literal_type
+
+
+func get_variable_type(expr: Expr.Variable) -> String:
+	var variable_type: String = interpreter.environment.types[expr.name_token.lexeme]
+	
+	expr.ret_type = variable_type
+	return variable_type
 
 
 func get_grouped_type(expr: Expr.Grouping) -> String:
@@ -715,3 +779,104 @@ func get_ternary_type(expr: Expr.Ternary) -> String:
 	# Otherwise, could be either type so we use mixed
 	expr.ret_type = "mixed"
 	return "mixed"
+
+
+func get_assignment_type(expr: Expr.Assignment) -> String:
+	var var_type: String = interpreter.environment.types[expr.name_token.lexeme]
+	var value_type: String = get_type(expr.value_expr)
+	
+	# Check for invalid var type based on operator
+	match expr.op_token.token_type:
+		Token.SET_EQUAL:
+			pass
+		Token.BIT_AND_EQUAL:
+			if var_type not in ["int", "char"] or value_type not in ["int", "char"]:
+				var msg: String = "Cannot perform '&=' on var of type %s with value of type %s"
+				msg %= [var_type, value_type]
+				interpreter.error_handler.error(expr.op_token.line_num, msg)
+		Token.BIT_OR_EQUAL:
+			if var_type not in ["int", "char"] or value_type not in ["int", "char"]:
+				var msg: String = "Cannot perform '|=' on var of type %s with value of type %s"
+				msg %= [var_type, value_type]
+				interpreter.error_handler.error(expr.op_token.line_num, msg)
+		Token.BIT_XOR_EQUAL:
+			if var_type not in ["int", "char"] or value_type not in ["int", "char"]:
+				var msg: String = "Cannot perform '^=' on var of type %s with value of type %s"
+				msg %= [var_type, value_type]
+				interpreter.error_handler.error(expr.op_token.line_num, msg)
+		Token.LEFT_SHIFT_EQUAL:
+			if var_type not in ["int", "char"] or value_type not in ["int", "char"]:
+				var msg: String = "Cannot perform '<<=' on var of type %s with value of type %s"
+				msg %= [var_type, value_type]
+				interpreter.error_handler.error(expr.op_token.line_num, msg)
+		Token.RIGHT_SHIFT_EQUAL:
+			if var_type not in ["int", "char"] or value_type not in ["int", "char"]:
+				var msg: String = "Cannot perform '>>=' on var of type %s with value of type %s"
+				msg %= [var_type, value_type]
+				interpreter.error_handler.error(expr.op_token.line_num, msg)
+		Token.PLUS_EQUAL:
+			var value_is_num: bool = value_type in ["int", "char", "float"]
+			var var_is_num: bool = var_type in ["int", "char", "float"]
+			var both_strings: bool = var_type == "string" or value_type == "string"
+			
+			if not (value_is_num and var_is_num or both_strings):
+				var msg: String = "Cannot perform '+=' on var of type %s with value of type %s"
+				msg %= [var_type, value_type]
+				interpreter.error_handler.error(expr.op_token.line_num, msg)
+		Token.MINUS_EQUAL:
+			var value_is_num: bool = value_type in ["int", "char", "float"]
+			var var_is_num: bool = var_type in ["int", "char", "float"]
+			
+			if not (value_is_num and var_is_num):
+				var msg: String = "Cannot perform '-=' on var of type %s with value of type %s"
+				msg %= [var_type, value_type]
+				interpreter.error_handler.error(expr.op_token.line_num, msg)
+		Token.STAR_EQUAL:
+			var value_is_num: bool = value_type in ["int", "char", "float"]
+			var var_is_num: bool = var_type in ["int", "char", "float"]
+			
+			if not (value_is_num and var_is_num):
+				var msg: String = "Cannot perform '*=' on var of type %s with value of type %s"
+				msg %= [var_type, value_type]
+				interpreter.error_handler.error(expr.op_token.line_num, msg)
+		Token.SLASH_EQUAL:
+			var value_is_num: bool = value_type in ["int", "char", "float"]
+			var var_is_num: bool = var_type in ["int", "char", "float"]
+			
+			if not (value_is_num and var_is_num):
+				var msg: String = "Cannot perform '/=' on var of type %s with value of type %s"
+				msg %= [var_type, value_type]
+				interpreter.error_handler.error(expr.op_token.line_num, msg)
+		Token.PERCENT_EQUAL:
+			var value_is_num: bool = value_type in ["int", "char", "float"]
+			var var_is_num: bool = var_type in ["int", "char", "float"]
+			
+			if not (value_is_num and var_is_num):
+				var msg: String = "Cannot perform '%=' on var of type %s with value of type %s"
+				msg %= [var_type, value_type]
+				interpreter.error_handler.error(expr.op_token.line_num, msg)
+		Token.EXPONENT_EQUAL:
+			var value_is_num: bool = value_type in ["int", "char", "float"]
+			var var_is_num: bool = var_type in ["int", "char", "float"]
+			
+			if not (value_is_num and var_is_num):
+				var msg: String = "Cannot perform '**=' on var of type %s with value of type %s"
+				msg %= [var_type, value_type]
+				interpreter.error_handler.error(expr.op_token.line_num, msg)
+	
+	if value_type != var_type:
+		var value_is_num: bool = value_type in ["int", "char", "float"]
+		var var_is_num: bool = var_type in ["int", "char", "float"]
+		
+		if value_is_num and var_is_num:
+			var old_value: Expr = expr.value_expr
+			var line_num: int = expr.op_token.line_num
+			
+			expr.value_expr = Expr.Conversion.new(old_value, var_type, line_num)
+			return var_type
+		
+		var msg: String = "Cannot assign var of type %s with '%s' using value of type %s"
+		msg = msg % [var_type, expr.op_token.lexeme, value_type]
+		interpreter.error_handler.error(expr.op_token.line_num, msg)
+	
+	return var_type

@@ -5,8 +5,8 @@ extends RichTextLabel
 var interpreter: Interpreter
 
 
-func println(print_text: String) -> void:
-	append_text(print_text + "\n")
+func println(print_text: String, end: String = "\n") -> void:
+	append_text(print_text + end)
 
 
 func clear_text() -> void:

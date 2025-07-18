@@ -13,7 +13,7 @@ func _init(p_tokens: Array[Token]) -> void:
 
 
 func _is_at_end() -> bool:
-	return current >= len(tokens) - 1
+	return _peek().token_type == Token.EOF
 
 
 func _peek() -> Token:
@@ -32,6 +32,14 @@ func _advance() -> Token:
 func _primary() -> Expr:
 	if _peek().token_type == Token.LITERAL:
 		return Expr.Literal.new(_advance())
+	
+	if _peek().token_type == Token.IDENTIFIER:
+		if _peek().lexeme not in interpreter.environment.types:
+			var msg: String = "Variable %s not yet defined" % _peek().lexeme
+			interpreter.error_handler.error(_peek().line_num, msg)
+			return null
+		
+		return Expr.Variable.new(_advance())
 	
 	if _peek().token_type == Token.OPEN_PAREN:
 		# Consume openning paren
@@ -55,12 +63,14 @@ func _primary() -> Expr:
 	return null
 
 
-func _type() -> String:
-	if _peek().token_type == Token.IDENTIFIER:
-		return _advance().lexeme
+func _type(required: bool = true) -> Token:
+	if _peek().token_type == Token.IDENTIFIER and _peek().lexeme in Typer.DATA_TYPES:
+		return _advance()
 	else:
-		interpreter.error_handler.error(_peek().line_num, "Type expected")
-		return "error"
+		if required:
+			interpreter.error_handler.error(_peek().line_num, "Type expected")
+		
+		return null
 
 
 func _unary() -> Expr:
@@ -195,9 +205,12 @@ func _conversion() -> Expr:
 	while _peek().token_type == Token.AS:
 		var as_line: int = _advance().line_num
 		
-		var conversion_type: String = _type()
+		var conversion_type: String
 		
-		if conversion_type == "error":
+		if _peek().token_type == Token.DATA_TYPE:
+			conversion_type = _advance().lexeme
+		else:
+			interpreter.error_handler.error(_peek().line_num, "Type expected")
 			return null
 		
 		expr = Expr.Conversion.new(expr, conversion_type, as_line)
@@ -318,14 +331,172 @@ func _ternary() -> Expr:
 	return true_expr
 
 
+func _assignment() -> Expr:
+	var expr: Expr = _ternary()
+	
+	var assignment_ops: Array[int] = [
+		Token.SET_EQUAL,
+		Token.BIT_AND_EQUAL,
+		Token.BIT_OR_EQUAL,
+		Token.BIT_XOR_EQUAL,
+		Token.LEFT_SHIFT_EQUAL,
+		Token.RIGHT_SHIFT_EQUAL,
+		Token.PLUS_EQUAL,
+		Token.MINUS_EQUAL,
+		Token.STAR_EQUAL,
+		Token.SLASH_EQUAL,
+		Token.PERCENT_EQUAL,
+		Token.EXPONENT_EQUAL,
+	]
+	
+	if _peek().token_type in assignment_ops:
+		var op_token: Token = _advance()
+		var value: Expr = _ternary()
+		
+		if expr is Expr.Variable:
+			var name_token: Token = expr.name_token
+			return Expr.Assignment.new(name_token, op_token, value)
+		
+		interpreter.error_handler.error(op_token.line_num, "Invalid assignment target")
+	
+	return expr
+
+
 func _expression() -> Expr:
-	return _ternary()
+	return _assignment()
 
 
-func parse() -> Expr:
+func _expression_statement() -> Statement:
+	# Get line_num from first token
+	var line_num: int = _peek().line_num
+	
 	var expr: Expr = _expression()
 	
 	if not expr:
 		return null
 	
-	return expr
+	if _peek().token_type == Token.NEW_LINE:
+		# Consume the new line
+		_advance()
+	elif _peek().token_type == Token.EOF:
+		# We are at the end of the file. This is also the end of the line
+		pass
+	else:
+		interpreter.error_handler.error(line_num, "Expected new line. Got %s" % _peek().lexeme)
+		return null
+	
+	return Statement.ExprStmt.new(line_num, expr)
+
+
+func _print_statement() -> Statement:
+	# Consume print keyword and opening paren while getting line num from print
+	var line_num: int = _advance().line_num
+	if _peek().token_type == Token.OPEN_PAREN:
+		_advance()
+	else:
+		interpreter.error_handler.error(line_num, "'(' expected after print")
+		return null
+	
+	var printed_expr: Expr = _expression()
+	
+	if not printed_expr:
+		return null
+	
+	# Consume closing paren
+	if _peek().token_type == Token.CLOSE_PAREN:
+		_advance()
+	else:
+		interpreter.error_handler.error(line_num, "')' expected after printed expression")
+		return null
+	
+	if _peek().token_type == Token.NEW_LINE:
+		# Consume the new line
+		_advance()
+	elif _peek().token_type == Token.EOF:
+		# We are at the end of the file. This is also the end of the line
+		pass
+	else:
+		interpreter.error_handler.error(line_num, "Only one statement allowed per line")
+		return null
+	
+	return Statement.Print.new(line_num, printed_expr)
+
+
+func _declaration_statement() -> Statement:
+	# Use type token for starting line and data type
+	var type_token: Token = _advance()
+	var line_num: int = type_token.line_num
+	var data_type: String = type_token.lexeme
+	
+	if type_token.lexeme in ["null", "mixed"]:
+		var msg: String = "Can not declare variable of type %s" % data_type
+		interpreter.error_handler.error(line_num, msg)
+		return null
+	
+	var name_token: Token
+	if _peek().token_type == Token.IDENTIFIER:
+		name_token = _advance()
+	else:
+		var msg: String = "Variable name expected after type for variable declaration"
+		interpreter.error_handler.error(line_num, msg)
+		return null
+	
+	if name_token.lexeme in interpreter.environment.types:
+		var msg: String = "Variable '%s' is already defined" % name_token.lexeme
+		interpreter.error_handler.error(line_num, msg)
+	
+	var initializer: Expr = null
+	
+	if _peek().token_type == Token.SET_EQUAL:
+		# Consume equal sign
+		_advance()
+		
+		initializer = _expression()
+		
+		if not initializer:
+			return null
+	
+	if _peek().token_type == Token.NEW_LINE:
+		# Consume the new line
+		_advance()
+	elif _peek().token_type == Token.EOF:
+		# We are at the end of the file. This is also the end of the line
+		pass
+	else:
+		interpreter.error_handler.error(line_num, "Only one statement allowed per line")
+		return null
+	
+	interpreter.environment.types[name_token.lexeme] = data_type
+	
+	return Statement.Declaration.new(line_num, data_type, name_token, initializer)
+
+
+func _statement() -> Statement:
+	var statement: Statement
+	
+	match _peek().token_type:
+		Token.PRINT:
+			statement = _print_statement()
+		Token.DATA_TYPE:
+			statement = _declaration_statement()
+		_:
+			statement = _expression_statement()
+	
+	if not statement:
+		# If we have a problem, just eat the rest of the line
+		while _peek().token_type not in [Token.NEW_LINE, Token.EOF]:
+			_advance()
+		
+		_advance()
+	
+	return statement
+
+
+func parse() -> Array[Statement]:
+	var statements: Array[Statement] = []
+	while not _is_at_end():
+		var next_statement = _statement()
+		if next_statement:
+			statements.append(next_statement)
+	
+	return statements
