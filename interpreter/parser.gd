@@ -475,6 +475,9 @@ func _statement() -> Statement:
 	var statement: Statement
 	
 	match _peek().token_type:
+		Token.NEW_LINE:
+			_advance()
+			return null
 		Token.PRINT:
 			statement = _print_statement()
 		Token.DATA_TYPE:

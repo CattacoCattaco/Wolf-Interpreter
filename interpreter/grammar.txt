@@ -2,7 +2,8 @@ program -> statement* EOF;
 
 statement -> expressionStatement
 			| printStatement
-			| declarationStatement;
+			| declarationStatement
+			| "\n";
 
 expressionStatement -> expression "\n";
 printStatement -> "print" "(" expression ")" "\n";
