@@ -186,40 +186,47 @@ text = "	[font_size=24][b][u]Numerical:[/u][/b][/font_size]
 	[b]int:[/b]
 [ul] Stores an integer
  Just write some digits without any decimal point and it will be an int
- Falsey if 0, otherwise truthy[/ul]
+ Falsey if 0, otherwise truthy
+ Default value: 0[/ul]
 
 	[b]float:[/b]
 [ul] Stores a floating point number
  Just write some digits with a decimal point and it will be a float
- Falsey if 0, otherwise truthy[/ul]
+ Falsey if 0, otherwise truthy
+ Default value: 0.0[/ul]
 
 	[b]char:[/b]
 [ul] Stores an unsigned 8 bit integer
  Also is an ascii character
  If you put the desired character in single quotes, you will get a char
- Falsey if 0, otherwise truthy[/ul]
+ Falsey if 0, otherwise truthy
+ Default value: 0[/ul]
 
 	[font_size=24][b][u]Other:[/u][/b][/font_size]
 	[b]string:[/b]
 [ul] Stores text of any length
  Wrap the desired text in double quotes to get a string
- Falsey if empty (\"\"), otherwise truthy[/ul]
+ Falsey if empty (\"\"), otherwise truthy
+ Default value: \"\"[/ul]
 
 	[b]bool:[/b]
 [ul] Stores a boolean value
  Just write true or false and it will make a bool
- Falsey if false, truthy if true[/ul]
+ Falsey if false, truthy if true
+ Default value: false[/ul]
 
 	[b]null:[/b]
 [ul] Is an unset value
  Just write null and you will get null
  Falsey
- Values can't be casted to null or declared as null[/ul]
+ Values can't be casted to null or declared as null
+ Default value: N/A[/ul]
 
 	[b]mixed:[/b]
 [ul] Could be of multiple different types depending on operator evaluation
  Must be cast to different type for use
- Values can't be casted to mixed or declared as mixed[/ul]"
+ Values can't be casted to mixed or declared as mixed
+ Default value: N/A[/ul]"
 metadata/_tab_index = 0
 
 [node name="Operators" type="RichTextLabel" parent="Manual/TabContainer"]
@@ -327,6 +334,12 @@ text = "	[font_size=24][b][u]Logical:[/u][/b][/font_size]
  Divides left input by right input
  Returns float if either input is a float. Otherwise, returns int if either input is an int. Otherwise, returns char[/ul]
 
+	[b]%[/b]
+[ul] Takes a left input and a right input
+ Inputs must be numbers (int, float, or char)
+ Returns left input mod right input
+ Returns float if either input is a float. Otherwise, returns int if either input is an int. Otherwise, returns char[/ul]
+
 	[b]**[/b]
 [ul] Takes a left input and a right input
  Inputs must be numbers (int, float, or char)
@@ -371,6 +384,91 @@ text = "	[font_size=24][b][u]Logical:[/u][/b][/font_size]
  Returns true if left input has a different value from right input. Otherwise, returns false
  Returns a bool[/ul]
 
+	[font_size=24][b][u]Asignment:[/u][/b][/font_size]
+
+	[b]=[/b]
+[ul] Takes a variable on the left and a value on the right
+ Value must be of variable's type unless value and variable are both numbers (int, char, or float) in which case value will be converted to variable's type
+ Sets variable's value to value
+ Returns variable's new value[/ul]
+
+	[b]&=[/b]
+[ul] Takes a variable on the left and a value on the right
+ Value and variable must both be intigers (int or char)
+ Value will be converted to variable's type
+ Sets variable's value to the bitwise and of its current value and value
+ Returns variable's new value[/ul]
+
+	[b]|=[/b]
+[ul] Takes a variable on the left and a value on the right
+ Value and variable must both be intigers (int or char)
+ Value will be converted to variable's type
+ Sets variable's value to the bitwise or of its current value and value
+ Returns variable's new value[/ul]
+
+	[b]^=[/b]
+[ul] Takes a variable on the left and a value on the right
+ Value and variable must both be intigers (int or char)
+ Value will be converted to variable's type
+ Sets variable's value to the bitwise xor of its current value and value
+ Returns variable's new value[/ul]
+
+	[b]<<=[/b]
+[ul] Takes a variable on the left and a value on the right
+ Value and variable must both be intigers (int or char)
+ Value will be converted to variable's type
+ Shifts variable's value's bits left by value
+ Returns variable's new value[/ul]
+
+	[b]>>=[/b]
+[ul] Takes a variable on the left and a value on the right
+ Value and variable must both be intigers (int or char)
+ Value will be converted to variable's type
+ Shifts variable's value's bits right by value
+ Returns variable's new value[/ul]
+
+	[b]+=[/b]
+[ul] Takes a variable on the left and a value on the right
+ Value must be of variable's type unless value and variable are both numbers (int, char, or float) in which case value will be converted to variable's type
+ Only works on strings or numbers
+ Sets variable's value to the result of (its current value + value)
+ Returns variable's new value[/ul]
+
+	[b]-=[/b]
+[ul] Takes a variable on the left and a value on the right
+ Value and variable must both be numbers (int, char, or float)
+ Value will be converted to variable's type
+ Decrases variable's value by value
+ Returns variable's new value[/ul]
+
+	[b]*=[/b]
+[ul] Takes a variable on the left and a value on the right
+ Value and variable must both be numbers (int, char, or float)
+ Value will be converted to variable's type
+ Multiplies variable's value by value
+ Returns variable's new value[/ul]
+
+	[b]/=[/b]
+[ul] Takes a variable on the left and a value on the right
+ Value and variable must both be numbers (int, char, or float)
+ Value will be converted to variable's type
+ Divides variable's value by value
+ Returns variable's new value[/ul]
+
+	[b]%=[/b]
+[ul] Takes a variable on the left and a value on the right
+ Value and variable must both be numbers (int, char, or float)
+ Value will be converted to variable's type
+ Sets variable's value to its current value modulo value
+ Returns variable's new value[/ul]
+
+	[b]**=[/b]
+[ul] Takes a variable on the left and a value on the right
+ Value and variable must both be numbers (int, char, or float)
+ Value will be converted to variable's type
+ Sets variable's value to its current value to the power of value
+ Returns variable's new value[/ul]
+
 	[font_size=24][b][u]Misc:[/u][/b][/font_size]
 
 	[b]+ (concatination)[/b]
@@ -414,8 +512,29 @@ text = "	[font_size=24][b][u]Operators From First Evaluated to Last:[/u][/b][/fo
  >, >=, <, <=, ==, !=
  not (also !)
  and (also &&), or (also ||), xor (also ^^), nand, nor, xnor
- if else[/ul]"
+ if else
+ =, &=, |=, ^=, +=, -=, *=, /=, %=, **=[/ul]"
 metadata/_tab_index = 2
+
+[node name="Statements" type="RichTextLabel" parent="Manual/TabContainer"]
+visible = false
+layout_mode = 2
+bbcode_enabled = true
+text = "	[font_size=24][b][u]Statements:[/u][/b][/font_size]
+
+	[b]Print:[/b]
+[ul] Written as \"print(<EXPRESSION>)\", where <EXPRESSION> is some expression
+ Converts value returned by expression to string and prints it to the console
+ BBCode is supported[/ul]
+
+	[b]Declaration:[/b]
+[ul] Written as \"<TYPE> <NAME>\" or \"<TYPE> <NAME> = <INITIALIZER>\", where <TYPE> is the variable's type, <NAME> is the variable's name, and <INITIALIZER> is the starting value of the variable
+ Creates a variable named <NAME> of type <TYPE>. If <INITIALIZER> is present, sets it to <INITIALIZER>. Otherwise, the type's default value is used.[/ul]
+
+	[b]Expression:[/b]
+[ul] Written as \"<EXPRESSION>\", where <EXPRESSION> is some expression
+ Evaluates expression[/ul]"
+metadata/_tab_index = 3
 
 [node name="CloseManualButton" type="Button" parent="Manual"]
 layout_mode = 1

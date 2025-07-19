@@ -39,6 +39,9 @@ func _ready() -> void:
 		interpreter.run("print(@3 + * 7)")
 		interpreter.run("print(5 as bool)")
 		interpreter.run("print(true as int)")
+		interpreter.run("int i = 'a'\nprint(i)")
+		interpreter.run("int i\nprint(i)")
+		interpreter.run("int i\ni = 'a'\nprint(i)")
 	
 	if OS.has_feature("web"):
 		_open_from_file_button.hide()
