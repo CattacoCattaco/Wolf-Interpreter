@@ -520,8 +520,39 @@ metadata/_tab_index = 2
 visible = false
 layout_mode = 2
 bbcode_enabled = true
-text = "	[font_size=24][b][u]Statements:[/u][/b][/font_size]
+text = "	[font_size=24][b][u]Flow Control:[/u][/b][/font_size]
+	[b]Indented block:[/b]
+[ul] Written as \"<INDENT><STATEMENTS><OUTDENT>\", where <INDENT> and <OUTDENT> are some equal amount of indentation and outdentation respectively  and <STATEMENTS> is a chain of statements
+ Converts value returned by expression to string and prints it to the console
+ BBCode is supported[/ul]
 
+	[b]If:[/b]
+[ul] Written as \"if <CONDITION>:\\n<BLOCK>\", where <CONDITION> is some expression and <BLOCK> is an indented block (Replace \"\\n\" with an actual new line)
+ Converts condition to bool and runs code in block if it returns true[/ul]
+
+	[b]Elif:[/b]
+[ul] Written as \"elif <CONDITION>:\\n<BLOCK>\", where <CONDITION> is some expression and <BLOCK> is an indented block (Replace \"\\n\" with an actual new line)
+ Must go right after an if statement or another elif statement
+ Converts condition to bool and runs code in block if it returns true and no prior if or elif statement has succeeded[/ul]
+
+	[b]Else:[/b]
+[ul] Written as \"else:\\n<BLOCK>\", where <BLOCK> is an indented block (Replace \"\\n\" with an actual new line)
+ Must go right after an if statement or an elif statement
+ Runs code in block if no prior if or elif statement has succeeded[/ul]
+
+	[b]While:[/b]
+[ul] Written as \"while <CONDITION>:\\n<BLOCK>\", where <CONDITION> is some expression and <BLOCK> is an indented block (Replace \"\\n\" with an actual new line)
+ Converts condition to bool and runs code in block until it returns false (Condition is re-evaluated each cycle before running the indented code)[/ul]
+
+	[b]For in range:[/b]
+[ul] Written as \"for <TYPE> <NAME> in range(<RANGE_PARAMS>):\\n<BLOCK>\", where <TYPE> is a number type, <NAME> is any valid variable name, <RANGE_PARAMS> is up to three numbers with commas in between them, and <BLOCK> is an indented block (Replace \"\\n\" with an actual new line)
+ <RANGE_PARAMS> numbers are alwats converted to ints
+ If one number is provided in <RANGE_PARAMS>, uses the integers from 0 (inclusive) up to that number(exclusive)
+ If two numbers are provided in <RANGE_PARAMS>, uses the integers from first number (inclusive) up to second number (exclusive)
+ If three numbers are provided in <RANGE_PARAMS>, uses the integers from first number (inclusive) up to second number (exclusive) in steps of third number (Negative steps go down)
+ For each number in the given range, runs the indented block's code with a local variable named <NAME> as that value converted to <TYPE>[/ul]
+
+	[font_size=24][b][u]Other:[/u][/b][/font_size]
 	[b]Print:[/b]
 [ul] Written as \"print(<EXPRESSION>)\", where <EXPRESSION> is some expression
  Converts value returned by expression to string and prints it to the console

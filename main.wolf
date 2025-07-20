@@ -11,11 +11,14 @@ print(i * 5)
 
 print("")
 
-int j = 10
+int j = 1
+int j2 = 0
 
-while j > 0:
+while j < 200:
 	print(j)
-	j -= 1
+	int old_j = j
+	j += j2
+	j2 = old_j
 
 print("")
 
