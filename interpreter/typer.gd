@@ -7,6 +7,8 @@ const DATA_TYPES: Array[String] = [
 	"float",
 	"string",
 	"bool",
+	"callable",
+	"void",
 	"null",
 	"mixed",
 ]
@@ -158,10 +160,10 @@ func get_type(expr: Expr) -> String:
 		return get_literal_type(expr)
 	elif expr is Expr.Variable:
 		return get_variable_type(expr)
-	elif expr is Expr.Variable:
-		return get_variable_type(expr)
 	elif expr is Expr.Grouping:
 		return get_grouped_type(expr)
+	elif expr is Expr.Call:
+		return get_call_type(expr)
 	elif expr is Expr.Conversion:
 		return get_converted_type(expr)
 	elif expr is Expr.Unary:
@@ -194,6 +196,19 @@ func get_grouped_type(expr: Expr.Grouping) -> String:
 	
 	expr.ret_type = ret_type
 	return ret_type
+
+
+func get_call_type(expr: Expr.Call) -> String:
+	var callable_type: String = get_type(expr.callable)
+	if callable_type != "callable":
+		var msg: String = "Cannot call %s" % callable_type
+		interpreter.error_handler.error(expr.close_paren.line_num, msg)
+		return callable_type
+	
+	var variable_type: String = current_env.get_type(expr.name_token.lexeme)
+	
+	expr.ret_type = variable_type
+	return variable_type
 
 
 func get_converted_type(expr: Expr.Conversion) -> String:

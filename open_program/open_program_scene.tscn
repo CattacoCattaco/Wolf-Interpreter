@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://daua6wcirk8pg"]
+[gd_scene load_steps=11 format=3 uid="uid://daua6wcirk8pg"]
 
 [ext_resource type="Script" uid="uid://cun2304gg4oab" path="res://open_program/open_program_scene.gd" id="1_023yp"]
 [ext_resource type="Script" uid="uid://d3rknkb2c67bb" path="res://game/game.gd" id="2_yxl0w"]
@@ -11,6 +11,12 @@
 atlas = ExtResource("5_d4i4x")
 region = Rect2(0, 0, 6, 6)
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4hq04"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6i576"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_d4i4x"]
+
 [node name="OpenProgramScene" type="Control" node_paths=PackedStringArray("_file_dialog", "_console", "_code_edit", "_open_from_file_button", "_run_button", "_clear_console_button", "_open_manual_button", "_close_manual_button", "manual")]
 layout_mode = 3
 anchors_preset = 15
@@ -20,7 +26,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_023yp")
 _file_dialog = NodePath("FileDialog")
-_console = NodePath("HSplitContainer/Console/VBoxContainer2/ColorRect/Console")
+_console = NodePath("HSplitContainer/Console/VBoxContainer2/ColorRect/ScrollContainer/VBoxContainer/Console")
 _code_edit = NodePath("HSplitContainer/Program/VBoxContainer/CodeEdit")
 _open_from_file_button = NodePath("HSplitContainer/Program/VBoxContainer/ButtonContainer/OpenFromFileButton")
 _run_button = NodePath("HSplitContainer/Program/VBoxContainer/ButtonContainer/RunButton")
@@ -147,17 +153,35 @@ layout_mode = 2
 size_flags_vertical = 3
 color = Color(0.202903, 0.1363, 0.29, 1)
 
-[node name="Console" type="RichTextLabel" parent="HSplitContainer/Console/VBoxContainer2/ColorRect"]
+[node name="ScrollContainer" type="ScrollContainer" parent="HSplitContainer/Console/VBoxContainer2/ColorRect"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/Console/VBoxContainer2/ColorRect/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Console" type="RichTextLabel" parent="HSplitContainer/Console/VBoxContainer2/ColorRect/ScrollContainer/VBoxContainer" node_paths=PackedStringArray("input_line")]
+layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 bbcode_enabled = true
+fit_content = true
+scroll_active = false
 script = ExtResource("6_4hq04")
+input_line = NodePath("../InputLine")
+
+[node name="InputLine" type="LineEdit" parent="HSplitContainer/Console/VBoxContainer2/ColorRect/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_4hq04")
+theme_override_styles/read_only = SubResource("StyleBoxEmpty_6i576")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_d4i4x")
+keep_editing_on_text_submit = true
+expand_to_text_length = true
 
 [node name="Manual" type="ColorRect" parent="."]
 visible = false

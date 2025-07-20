@@ -106,6 +106,27 @@ class Conversion:
 		return "(%s as %s)" % [converted_expr, new_type]
 
 
+## Represents a function call: func(arguments?)
+class Call:
+	extends Expr
+	
+	## The function being called:
+	var callable: Expr
+	var close_paren: Token
+	var args: Array[Expr]
+	
+	func _init(p_callable: Expr, p_close_paren: Token, p_args: Array[Expr]) -> void:
+		callable = p_callable
+		close_paren = p_close_paren
+		args = p_args
+	
+	func _to_string() -> String:
+		var ret_text: String = "%s("
+		for arg in args:
+			ret_text += str(arg) + ", "
+		return ret_text.trim_suffix(", ") + ")"
+
+
 ## Represents a grouped expression: (expression)
 class Grouping:
 	extends Expr

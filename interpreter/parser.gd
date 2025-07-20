@@ -65,14 +65,46 @@ func _primary() -> Expr:
 	return null
 
 
-func _type(required: bool = true) -> Token:
-	if _peek().token_type == Token.IDENTIFIER and _peek().lexeme in Typer.DATA_TYPES:
-		return _advance()
-	else:
-		if required:
-			interpreter.error_handler.error(_peek().line_num, "Type expected")
+func _call() -> Expr:
+	var expr: Expr = _primary()
+	
+	while _peek().token_type == Token.OPEN_PAREN:
+		var paren_token: Token = _advance()
 		
-		return null
+		var arguments: Array[Expr] = []
+		
+		while _peek().token_type != Token.CLOSE_PAREN and not _is_at_end():
+			var arg: Expr = _expression()
+			
+			if not arg:
+				return null
+			
+			arguments.append(arg)
+			
+			# Consume the comma
+			if _peek().token_type == Token.COMMA:
+				_advance()
+			else:
+				var msg: String = "',' expected between arguments"
+				interpreter.error_handler.error(paren_token.line_num, msg)
+				return null
+		
+		var close_paren_token: Token
+		# Consume the ')'
+		if _peek().token_type == Token.CLOSE_PAREN:
+			close_paren_token = _advance()
+		else:
+			var msg: String = "')' expected after arguments"
+			interpreter.error_handler.error(paren_token.line_num, msg)
+			return null
+		
+		if len(arguments) > 255:
+			var msg: String = "Can't have more than 255 arguments"
+			interpreter.error_handler.error(close_paren_token.line_num, msg)
+		
+		expr = Expr.Call.new(expr, close_paren_token, arguments)
+	
+	return expr
 
 
 func _unary() -> Expr:
@@ -85,7 +117,7 @@ func _unary() -> Expr:
 		
 		return Expr.Unary.new(op_token, right)
 	
-	return _primary()
+	return _call()
 
 
 func _exponent() -> Expr:
@@ -353,7 +385,7 @@ func _assignment() -> Expr:
 	
 	if _peek().token_type in assignment_ops:
 		var op_token: Token = _advance()
-		var value: Expr = _ternary()
+		var value: Expr = _assignment()
 		
 		if expr is Expr.Variable:
 			var name_token: Token = expr.name_token

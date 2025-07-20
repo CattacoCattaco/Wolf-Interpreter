@@ -11,7 +11,7 @@ printStatement -> "print" "(" expression ")" "\n"?;
 declarationStatement -> TYPE IDENTIFIER ("=" expression)? "\n"?;
 if -> "if" expression ":" "\n" block
 	("elif" expression ":" "\n" block)? 
-	("else" expression ":" "\n" block)?;
+	("else" ":" "\n" block)?;
 while -> "while" expression ":" "\n" block;
 for -> "for" TYPE IDENTIFIER "in" "range" "(" INT ("," INT){0,2} ")" ":" "\n" block;
 
@@ -19,7 +19,7 @@ block -> INDENT{1,} statement* (OUTDENT{1,})?; // Indent/outdent count must matc
 
 expression -> assignment;
 
-assignment -> IDENTIFIER "=" ternary
+assignment -> IDENTIFIER "=" assignment
 			| ternary;
 
 ternary -> binLogic "if" binLogic "else" binLogic;
@@ -42,7 +42,11 @@ factor -> unary (("/" | "*" | "%") unary)*;
 exp -> factor ("**" factor)*;
 
 unary -> ("-" | "~") unary
-		| primary;
+		| call;
+
+call -> primary ("(" arguments? ")")*;
+
+arguments -> expression ("," expression)*
 
 primary -> NUM | STRING | BOOL | NULL
 		| "(" expression ")"
