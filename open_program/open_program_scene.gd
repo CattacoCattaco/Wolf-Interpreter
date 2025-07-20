@@ -55,10 +55,10 @@ func _ready() -> void:
 	_close_manual_button.pressed.connect(manual.hide)
 
 
-func _file_selected(path: String):
+func _file_selected(path: String) -> void:
 	wolf_file = FileAccess.open(path, FileAccess.READ)
 	_code_edit.text = wolf_file.get_as_text()
 
 
-func _run():
+func _run() -> void:
 	interpreter.run(_code_edit.text)

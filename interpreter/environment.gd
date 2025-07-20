@@ -1,8 +1,42 @@
 class_name WolfEnvironment
 extends RefCounted
 
-## A reference to the interpreter which created this
-var interpreter: Interpreter
-
 var values: Dictionary[String, Variant] = {}
 var types: Dictionary[String, String] = {}
+
+var parent_environment: WolfEnvironment
+
+
+func _init(p_parent_environment: WolfEnvironment = null) -> void:
+	parent_environment = p_parent_environment
+
+
+func get_value(var_name: String) -> Variant:
+	if var_name in values:
+		return values[var_name]
+	
+	return parent_environment.get_value(var_name)
+
+
+func set_value(var_name: String, value: Variant) -> void:
+	if var_name in values:
+		values[var_name] = value
+		return
+	
+	parent_environment.set_value(var_name, value)
+
+
+func get_type(var_name: String) -> String:
+	if var_name in types:
+		return types[var_name]
+	
+	return parent_environment.get_type(var_name)
+
+
+func var_has_type(var_name: String) -> bool:
+	if var_name in types:
+		return true
+	elif parent_environment:
+		return parent_environment.var_has_type(var_name)
+	
+	return false

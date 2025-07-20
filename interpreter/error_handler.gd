@@ -25,14 +25,14 @@ func report(line: int, where: String, message: String, is_error: bool) -> void:
 		warnings.append(error_message)
 
 
-func error(line: int, message: String):
+func error(line: int, message: String) -> void:
 	report(line, "", message, true)
 
 
-func warn(line: int, message: String):
+func warn(line: int, message: String) -> void:
 	report(line, "", message, false)
 
 
-func clear():
+func clear() -> void:
 	errors = []
 	warnings = []

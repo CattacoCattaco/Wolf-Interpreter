@@ -7,6 +7,8 @@ var current: int = 0
 ## A reference to the interpreter which created this
 var interpreter: Interpreter
 
+var current_env: WolfEnvironment
+
 
 func _init(p_tokens: Array[Token]) -> void:
 	tokens = p_tokens
@@ -34,7 +36,7 @@ func _primary() -> Expr:
 		return Expr.Literal.new(_advance())
 	
 	if _peek().token_type == Token.IDENTIFIER:
-		if _peek().lexeme not in interpreter.environment.types:
+		if not current_env.var_has_type(_peek().lexeme):
 			var msg: String = "Variable %s not yet defined" % _peek().lexeme
 			interpreter.error_handler.error(_peek().line_num, msg)
 			return null
@@ -441,9 +443,13 @@ func _declaration_statement() -> Statement:
 		interpreter.error_handler.error(line_num, msg)
 		return null
 	
-	if name_token.lexeme in interpreter.environment.types:
+	if name_token.lexeme in current_env.types:
 		var msg: String = "Variable '%s' is already defined" % name_token.lexeme
 		interpreter.error_handler.error(line_num, msg)
+		return null
+	elif current_env.var_has_type(name_token.lexeme):
+		var msg: String = "Variable '%s' shadows external variable" % name_token.lexeme
+		interpreter.error_handler.warn(line_num, msg)
 	
 	var initializer: Expr = null
 	
@@ -466,9 +472,306 @@ func _declaration_statement() -> Statement:
 		interpreter.error_handler.error(line_num, "Only one statement allowed per line")
 		return null
 	
-	interpreter.environment.types[name_token.lexeme] = data_type
+	current_env.types[name_token.lexeme] = data_type
 	
 	return Statement.Declaration.new(line_num, data_type, name_token, initializer)
+
+
+func _block(local_var_types: Dictionary[String, String] = {}) -> Statement.Block:
+	# Get line_num from Indent
+	var line_num: int = _advance().line_num
+	
+	var indent_count: int = 1
+	
+	while _peek().token_type == Token.INDENT:
+		_advance()
+		indent_count += 1
+	
+	var new_env: WolfEnvironment = WolfEnvironment.new(current_env)
+	current_env = new_env
+	
+	for local_var_name: String in local_var_types:
+		current_env.types[local_var_name] = local_var_types[local_var_name]
+	
+	var statements: Array[Statement]
+	
+	while _peek().token_type != Token.OUTDENT and not _is_at_end():
+		var statement: Statement = _statement()
+		
+		if not statement:
+			return null
+		
+		statements.append(statement)
+	
+	for i in range(indent_count):
+		if _is_at_end():
+			break
+		elif _peek().token_type == Token.OUTDENT:
+			_advance()
+		else:
+			interpreter.error_handler.error(_peek().line_num, "Insuficient outdentation")
+			return null
+	
+	current_env = new_env.parent_environment
+	
+	return Statement.Block.new(line_num, statements, new_env)
+
+
+func _if() -> Statement:
+	# Get line_num from if
+	var line_num: int = _advance().line_num
+	
+	var cond: Expr = _expression()
+	
+	if not cond:
+		return null
+	
+	# Consume colon
+	if _peek().token_type == Token.COLON:
+		_advance()
+	else:
+		interpreter.error_handler.error(line_num, "':' expected after if condition")
+		return null
+	
+	# Consume new line
+	if _peek().token_type == Token.NEW_LINE:
+		_advance()
+	else:
+		interpreter.error_handler.error(line_num, "New line expected after if")
+		return null
+	
+	var if_block: Statement.Block
+	
+	# Get indented block
+	if _peek().token_type == Token.INDENT:
+		if_block = _block()
+		
+		if not if_block:
+			return null
+	else:
+		interpreter.error_handler.error(line_num, "Indented block expected after if")
+		return null
+	
+	var elif_lines: Array[int] = []
+	var elif_conds: Array[Expr] = []
+	var elif_blocks: Array[Statement.Block] = []
+	while _peek().token_type == Token.ELIF:
+		# Get line_num from elif
+		var new_line_num: int = _advance().line_num
+		elif_lines.append(new_line_num)
+		
+		var new_cond: Expr = _expression()
+		
+		if not cond:
+			return null
+		
+		elif_conds.append(new_cond)
+		
+		# Consume colon
+		if _peek().token_type == Token.COLON:
+			_advance()
+		else:
+			interpreter.error_handler.error(line_num, "':' expected after elif condition")
+			return null
+		
+		# Consume new line
+		if _peek().token_type == Token.NEW_LINE:
+			_advance()
+		else:
+			interpreter.error_handler.error(line_num, "New line expected after elif")
+			return null
+		
+		var elif_block: Statement.Block
+		
+		# Get indented block
+		if _peek().token_type == Token.INDENT:
+			elif_block = _block()
+			
+			if not elif_block:
+				return null
+			
+			elif_blocks.append(elif_block)
+		else:
+			interpreter.error_handler.error(line_num, "Indented block expected after elif")
+			return null
+	
+	var else_line: int = 0
+	var else_block: Statement.Block = null
+	if _peek().token_type == Token.ELSE:
+		# Get line_num from else
+		else_line = _advance().line_num
+		
+		# Consume colon
+		if _peek().token_type == Token.COLON:
+			_advance()
+		else:
+			interpreter.error_handler.error(line_num, "':' expected after else")
+			return null
+		
+		# Consume new line
+		if _peek().token_type == Token.NEW_LINE:
+			_advance()
+		else:
+			interpreter.error_handler.error(line_num, "New line expected after else")
+			return null
+		
+		# Get indented block
+		if _peek().token_type == Token.INDENT:
+			else_block = _block()
+			
+			if not else_block:
+				return null
+		else:
+			interpreter.error_handler.error(line_num, "Indented block expected after else")
+			return null
+	
+	return Statement.If.new(line_num, cond, if_block, elif_conds, elif_blocks, elif_lines, 
+			else_block, else_line)
+
+
+func _while() -> Statement:
+	# Get line_num from while
+	var line_num: int = _advance().line_num
+	
+	var cond: Expr = _expression()
+	
+	if not cond:
+		return null
+	
+	# Consume colon
+	if _peek().token_type == Token.COLON:
+		_advance()
+	else:
+		interpreter.error_handler.error(line_num, "':' expected after while condition")
+		return null
+	
+	# Consume new line
+	if _peek().token_type == Token.NEW_LINE:
+		_advance()
+	else:
+		interpreter.error_handler.error(line_num, "New line expected after while")
+		return null
+	
+	var block: Statement.Block
+	
+	# Get indented block
+	if _peek().token_type == Token.INDENT:
+		block = _block()
+		
+		if not block:
+			return null
+	else:
+		interpreter.error_handler.error(line_num, "Indented block expected after while")
+		return null
+	
+	return Statement.While.new(line_num, cond, block)
+
+
+func _for() -> Statement:
+	# Get line_num from for
+	var line_num: int = _advance().line_num
+	
+	var var_type: String
+	
+	if _peek().token_type == Token.DATA_TYPE:
+		var_type = _advance().lexeme
+	else:
+		interpreter.error_handler.error(line_num, "Variable type expected after for")
+		return null
+	
+	var var_name: String
+	
+	if _peek().token_type == Token.IDENTIFIER:
+		var_name = _advance().lexeme
+	else:
+		interpreter.error_handler.error(line_num, "Variable name expected after its type")
+		return null
+	
+	# Consume in
+	if _peek().token_type == Token.IN:
+		_advance()
+	else:
+		interpreter.error_handler.error(line_num, "'in' expected after for variable")
+		return null
+	
+	# Consume range
+	if _peek().token_type == Token.RANGE:
+		_advance()
+	else:
+		interpreter.error_handler.error(line_num, "'range' expected after 'in'")
+		return null
+	
+	# Consume (
+	if _peek().token_type == Token.OPEN_PAREN:
+		_advance()
+	else:
+		interpreter.error_handler.error(line_num, "'(' expected after 'range'")
+		return null
+	
+	# End is required but start and step default to 0 and 1 respectively
+	var start: Expr = Expr.Literal.new(Token.new(Token.LITERAL, "0", 0, "int", line_num))
+	var end: Expr
+	var step: Expr = Expr.Literal.new(Token.new(Token.LITERAL, "1", 1, "int", line_num))
+	
+	end = _expression()
+	
+	if not end:
+		return null
+	
+	if _peek().token_type == Token.COMMA:
+		_advance()
+		
+		start = end
+		
+		print("hi")
+		
+		end = _expression()
+		
+		if not end:
+			return null
+		
+		if _peek().token_type == Token.COMMA:
+			_advance()
+			
+			step = _expression()
+			
+			if not step:
+				return null
+	
+	# Consume )
+	if _peek().token_type == Token.CLOSE_PAREN:
+		_advance()
+	else:
+		interpreter.error_handler.error(line_num, "')' expected after range params")
+		return null
+	
+	# Consume colon
+	if _peek().token_type == Token.COLON:
+		_advance()
+	else:
+		interpreter.error_handler.error(line_num, "':' expected after for")
+		return null
+	
+	# Consume new line
+	if _peek().token_type == Token.NEW_LINE:
+		_advance()
+	else:
+		interpreter.error_handler.error(line_num, "New line expected after for")
+		return null
+	
+	var block: Statement.Block
+	
+	# Get indented block
+	if _peek().token_type == Token.INDENT:
+		block = _block({var_name: var_type})
+		
+		if not block:
+			return null
+	else:
+		interpreter.error_handler.error(line_num, "Indented block expected after for")
+		return null
+	
+	return Statement.ForRange.new(line_num, var_type, var_name, start, end, step, block)
 
 
 func _statement() -> Statement:
@@ -476,12 +779,17 @@ func _statement() -> Statement:
 	
 	match _peek().token_type:
 		Token.NEW_LINE:
-			_advance()
-			return null
+			return Statement.Empty.new(_advance().line_num)
 		Token.PRINT:
 			statement = _print_statement()
 		Token.DATA_TYPE:
 			statement = _declaration_statement()
+		Token.IF:
+			statement = _if()
+		Token.WHILE:
+			statement = _while()
+		Token.FOR:
+			statement = _for()
 		_:
 			statement = _expression_statement()
 	
@@ -496,9 +804,11 @@ func _statement() -> Statement:
 
 
 func parse() -> Array[Statement]:
+	current_env = interpreter.environment
+	
 	var statements: Array[Statement] = []
 	while not _is_at_end():
-		var next_statement = _statement()
+		var next_statement: Statement = _statement()
 		if next_statement:
 			statements.append(next_statement)
 	

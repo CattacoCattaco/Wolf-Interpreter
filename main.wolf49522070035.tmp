@@ -1,0 +1,26 @@
+int i = 5
+
+if i == 5:
+	print("b")
+elif i == 3:
+	print(72)
+else:
+	print(i * 3)
+
+print(i * 5)
+
+print("")
+
+int j = 1
+int j2 = 0
+
+while j < 200:
+	print(j)
+	int old_j = j
+	j += j2
+	j2 = old_j
+
+print("")
+
+for int k in range(16, 30, 2):
+	print(k)

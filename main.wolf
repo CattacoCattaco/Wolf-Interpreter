@@ -1,1 +1,23 @@
--312 + 32 % 3 == 7 * 4 if "cat" == "bob" and 1.25 < 3 else true xor 1 == 3
+int i = 5
+
+if i == 5:
+	print("b")
+elif i == 3:
+	print(72)
+else:
+	print(i * 3)
+
+print(i * 5)
+
+print("")
+
+int j = 10
+
+while j > 0:
+	print(j)
+	j -= 1
+
+print("")
+
+for int k in range(16, 30, 2):
+	print(k)

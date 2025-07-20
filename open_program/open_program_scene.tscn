@@ -48,7 +48,6 @@ filters = PackedStringArray("*.wolf", "*.txt")
 use_native_dialog = true
 
 [node name="Game" type="Control" parent="." node_paths=PackedStringArray("timer", "cell_grid")]
-visible = false
 layout_mode = 2
 anchors_preset = 0
 offset_left = 582.0

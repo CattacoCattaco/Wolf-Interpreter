@@ -79,14 +79,14 @@ var token_type: int
 ## The characters that made this token
 var lexeme: String
 ## The value of this token if it's a literal
-var literal_value
+var literal_value: Variant
 ## The type of this token if it's a literal, always lower case
 var literal_type: String
 ## The line number of this token
 var line_num: int
 
 
-func _init(p_token_type: int = 0, p_lexeme: String = "", p_literal_value = null, 
+func _init(p_token_type: int = 0, p_lexeme: String = "", p_literal_value: Variant = null, 
 		p_literal_type: String = "", p_line_num: int = 0) -> void:
 	token_type = p_token_type
 	lexeme = p_lexeme

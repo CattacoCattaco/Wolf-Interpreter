@@ -35,7 +35,7 @@ class Ternary:
 	var false_exp: Expr
 	
 	## The line number
-	var line_num
+	var line_num: int
 	
 	func _init(p_true_exp: Expr, p_cond: Expr, p_false_exp: Expr, p_line_num: int) -> void:
 		true_exp = p_true_exp

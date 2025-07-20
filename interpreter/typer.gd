@@ -14,8 +14,13 @@ const DATA_TYPES: Array[String] = [
 ## A reference to the interpreter which created this
 var interpreter: Interpreter
 
+var current_env: WolfEnvironment
+
 
 func type_check_statements(statements: Array[Statement]) -> void:
+	if not current_env:
+		current_env = interpreter.environment
+	
 	for statement in statements:
 		type_check_statement(statement)
 
@@ -27,6 +32,14 @@ func type_check_statement(statement: Statement) -> void:
 		type_check_declaration_statement(statement)
 	elif statement is Statement.ExprStmt:
 		type_check_expr_statement(statement)
+	elif statement is Statement.Block:
+		type_check_block_statement(statement)
+	elif statement is Statement.If:
+		type_check_if_statement(statement)
+	elif statement is Statement.While:
+		type_check_while_statement(statement)
+	elif statement is Statement.ForRange:
+		type_check_for_range_statement(statement)
 
 
 func type_check_expr_statement(statement: Statement.ExprStmt) -> void:
@@ -61,6 +74,85 @@ func type_check_declaration_statement(statement: Statement.Declaration) -> void:
 	return
 
 
+func type_check_block_statement(statement: Statement.Block) -> void:
+	current_env = statement.environment
+	type_check_statements(statement.statements)
+	current_env = current_env.parent_environment
+	return
+
+
+func type_check_if_statement(statement: Statement.If) -> void:
+	get_type(statement.condition)
+	statement.condition = Expr.Conversion.new(statement.condition, "bool", statement.line_start)
+	type_check_block_statement(statement.block)
+	
+	for i in len(statement.elif_blocks):
+		var cond: Expr = statement.elif_conds[i]
+		get_type(cond)
+		statement.elif_conds[i] = Expr.Conversion.new(cond, "bool", statement.elif_lines[i])
+		type_check_block_statement(statement.elif_blocks[i])
+	
+	if statement.else_block:
+		type_check_block_statement(statement.else_block)
+	return
+
+
+func type_check_while_statement(statement: Statement.While) -> void:
+	get_type(statement.condition)
+	statement.condition = Expr.Conversion.new(statement.condition, "bool", statement.line_start)
+	type_check_block_statement(statement.block)
+	return
+
+
+func type_check_for_range_statement(statement: Statement.ForRange) -> void:
+	match statement.var_type:
+		"int":
+			pass
+		"char":
+			pass
+		"float":
+			pass
+		var type:
+			var msg: String = "Cannot convert range values to %s" % type
+			interpreter.error_handler.error(statement.line_start, msg)
+	
+	match get_type(statement.start):
+		"int":
+			pass
+		"char":
+			statement.start = Expr.Conversion.new(statement.start, "int", statement.line_start)
+		"float":
+			statement.start = Expr.Conversion.new(statement.start, "int", statement.line_start)
+		var type:
+			var msg: String = "Cannot convert %s to int" % type
+			interpreter.error_handler.error(statement.line_start, msg)
+	
+	match get_type(statement.end):
+		"int":
+			pass
+		"char":
+			statement.end = Expr.Conversion.new(statement.end, "int", statement.line_start)
+		"float":
+			statement.end = Expr.Conversion.new(statement.end, "int", statement.line_start)
+		var type:
+			var msg: String = "Cannot convert %s to int" % type
+			interpreter.error_handler.error(statement.line_start, msg)
+	
+	match get_type(statement.step):
+		"int":
+			pass
+		"char":
+			statement.step = Expr.Conversion.new(statement.step, "int", statement.line_start)
+		"float":
+			statement.step = Expr.Conversion.new(statement.step, "int", statement.line_start)
+		var type:
+			var msg: String = "Cannot convert %s to int" % type
+			interpreter.error_handler.error(statement.line_start, msg)
+	
+	type_check_block_statement(statement.block)
+	return
+
+
 func get_type(expr: Expr) -> String:
 	if expr is Expr.Literal:
 		return get_literal_type(expr)
@@ -91,7 +183,7 @@ func get_literal_type(expr: Expr.Literal) -> String:
 
 
 func get_variable_type(expr: Expr.Variable) -> String:
-	var variable_type: String = interpreter.environment.types[expr.name_token.lexeme]
+	var variable_type: String = current_env.get_type(expr.name_token.lexeme)
 	
 	expr.ret_type = variable_type
 	return variable_type
@@ -782,7 +874,7 @@ func get_ternary_type(expr: Expr.Ternary) -> String:
 
 
 func get_assignment_type(expr: Expr.Assignment) -> String:
-	var var_type: String = interpreter.environment.types[expr.name_token.lexeme]
+	var var_type: String = current_env.get_type(expr.name_token.lexeme)
 	var value_type: String = get_type(expr.value_expr)
 	
 	# Check for invalid var type based on operator

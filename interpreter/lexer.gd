@@ -26,7 +26,7 @@ var paren_start_line: int = 0
 ## Checks if a string has a digit
 var digit_regex := RegEx.create_from_string("[0-9]")
 ## Checks if a string has a letter
-var alpha_regex := RegEx.create_from_string("[A-Za-z]")
+var alpha_regex := RegEx.create_from_string("[A-Za-z_]")
 
 ## A reference to the interpreter which created this
 var interpreter: Interpreter
@@ -56,7 +56,7 @@ func _advance() -> String:
 
 
 ## Add a token to tokens
-func _add_token(token_type: int, literal_value = null, literal_type: String = "") -> void:
+func _add_token(token_type: int, literal_value: Variant = null, literal_type: String = "") -> void:
 	var text: String = source.substr(start, current - start)
 	tokens.append(Token.new(token_type, text, literal_value, literal_type, line))
 
@@ -80,7 +80,10 @@ func _is_alphanumeric(character: String) -> bool:
 func _check_no_lead_white_space() -> void:
 	if line_start and paren_layer == 0:
 		if len(last_line_white_space) > 0:
-			_add_token(Token.OUTDENT)
+			for character: String in last_line_white_space:
+				_add_token(Token.OUTDENT)
+			
+			last_line_white_space = ""
 		
 		line_start = false
 
@@ -334,18 +337,22 @@ func _scan_token() -> void:
 					white_space += character
 					
 					if character == "\t":
-						interpreter.error_handler.warn(line, "Mixed tabs and spaces")
+						interpreter.error_handler.error(line, "Mixed tabs and spaces")
 				
-				var current_has_last: bool = white_space in last_line_white_space
-				var last_has_current: bool = white_space in last_line_white_space
+				var current_has_last: bool = (last_line_white_space in white_space
+						or (white_space != "" and last_line_white_space == ""))
+				var last_has_current: bool = (white_space in last_line_white_space
+						or (last_line_white_space != "" and white_space == ""))
 				
 				if current_has_last and not last_has_current:
 					# We must have added indentation
-					_add_token(Token.INDENT)
-				elif current_has_last and not last_has_current:
+					for character: String in white_space.trim_suffix(last_line_white_space):
+						_add_token(Token.INDENT)
+				elif last_has_current and not current_has_last:
 					# We must have removed indentation
-					_add_token(Token.OUTDENT)
-				elif current_has_last and last_has_current:
+					for character: String in last_line_white_space.trim_suffix(white_space):
+						_add_token(Token.OUTDENT)
+				elif white_space == last_line_white_space:
 					# Indentation wasn't added nor was it removed
 					pass
 				else:
@@ -368,15 +375,19 @@ func _scan_token() -> void:
 					if character == " ":
 						interpreter.error_handler.warn(line, "Mixed tabs and spaces")
 				
-				var current_has_last: bool = white_space in last_line_white_space
-				var last_has_current: bool = last_line_white_space in white_space
+				var current_has_last: bool = (last_line_white_space in white_space
+						or (white_space != "" and last_line_white_space == ""))
+				var last_has_current: bool = (white_space in last_line_white_space
+						or (last_line_white_space != "" and white_space == ""))
 				
-				if (current_has_last or white_space == "") and not last_has_current:
+				if (current_has_last and not last_has_current):
 					# We must have added indentation
-					_add_token(Token.INDENT)
-				elif (last_has_current or last_line_white_space == "") and not current_has_last:
+					for character: String in white_space.trim_suffix(last_line_white_space):
+						_add_token(Token.INDENT)
+				elif last_has_current and not current_has_last:
 					# We must have removed indentation
-					_add_token(Token.OUTDENT)
+					for character: String in last_line_white_space.trim_suffix(white_space):
+						_add_token(Token.OUTDENT)
 				elif white_space == last_line_white_space:
 					# Indentation wasn't added nor was it removed
 					pass
@@ -400,7 +411,7 @@ func _scan_token() -> void:
 			# Chars: Take "'" + some character + "'"
 			_check_no_lead_white_space()
 			
-			var character = _advance()
+			var character: Variant = _advance()
 			
 			if character == "\\":
 				character = _advance()
@@ -434,7 +445,7 @@ func _scan_token() -> void:
 					string += "\n"
 					line += 1
 				elif next == "\\":
-					var escaped = _advance()
+					var escaped: Variant = _advance()
 					if escaped in ["'", "\"", "\\", "$"]:
 						# Valid chars to escape, no need for us to modify
 						string += escaped
