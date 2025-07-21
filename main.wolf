@@ -1,29 +1,23 @@
-int i = 5
+clear_console()
 
-if i == 5:
-	print("b")
-elif i == 3:
-	print(72)
+string input = prompt("Would you like to go on an adventure?\n(Enter \"y\" for yes or \"n\" for no)")
+
+while input != "y" and input != "n":
+	input = prompt("Sorry. I don't understand. Please enter \"y\" for yes or \"n\" for no")
+
+if input == "y":
+	input = prompt("We shall go on a grand adventure. Press \"x\" to cancel")
+	if input != "x":
+		print("You aren't good at instructions. You failed")
+	else:
+		input = prompt("Good job. Now for real, would you like to continue?")
+		
+		while input != "y" and input != "n":
+			input = prompt("Sorry. I don't understand. Please enter \"y\" for yes or \"n\" for no")
+		
+		if input == "y":
+			print("More coming soon")
+		else:
+			print("Oh well")
 else:
-	print(i * 3)
-
-print(i * 5)
-
-print("")
-
-int j = 1
-int j2 = 0
-
-while j < 200:
-	print(j)
-	int old_j = j
-	j += j2
-	j2 = old_j
-
-print("")
-
-for int k in range(16, 30, 2):
-	print(k)
-
-if i == 12:
-	clear_console()
+	print("Goodbye")

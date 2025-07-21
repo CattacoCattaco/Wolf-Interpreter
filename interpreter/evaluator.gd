@@ -64,23 +64,23 @@ func evaluate_block_statement(statement: Statement.Block) -> void:
 
 func evaluate_if_statement(statement: Statement.If) -> void:
 	if (await evaluate_expr(statement.condition))["value"]:
-		evaluate_block_statement(statement.block)
+		await evaluate_block_statement(statement.block)
 		return
 	
 	for i in len(statement.elif_blocks):
 		if (await evaluate_expr(statement.condition))["value"]:
-			evaluate_block_statement(statement.elif_blocks[i])
+			await evaluate_block_statement(statement.elif_blocks[i])
 			return
 	
 	if statement.else_block:
-		evaluate_block_statement(statement.else_block)
+		await evaluate_block_statement(statement.else_block)
 	return
 
 
 func evaluate_while_statement(statement: Statement.While) -> void:
 	while (await evaluate_expr(statement.condition))["value"]:
 		statement.block.environment.values = {}
-		evaluate_block_statement(statement.block)
+		await evaluate_block_statement(statement.block)
 	
 	return
 
@@ -98,7 +98,7 @@ func evaluate_for_range_statement(statement: Statement.ForRange) -> void:
 		var converted_i: Variant = (await eval_conversion(i_conversion))["value"]
 		statement.block.environment.values[statement.var_name] = converted_i
 		
-		evaluate_block_statement(statement.block)
+		await evaluate_block_statement(statement.block)
 	
 	return
 
