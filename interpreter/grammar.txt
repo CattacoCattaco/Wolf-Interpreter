@@ -1,13 +1,11 @@
 program -> statement* EOF;
 
 statement -> expressionStatement
-			| printStatement
 			| declarationStatement
 			| if
 			| "\n";
 
 expressionStatement -> expression "\n"?;
-printStatement -> "print" "(" expression ")" "\n"?;
 declarationStatement -> TYPE IDENTIFIER ("=" expression)? "\n"?;
 if -> "if" expression ":" "\n" block
 	("elif" expression ":" "\n" block)? 

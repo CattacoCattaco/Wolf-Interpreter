@@ -15,5 +15,5 @@ func _ret_type(arg_types: Array[String]) -> String:
 
 ## Calls the function
 ## Void funcs return null
-func _call() -> Variant:
+func _call(args: Array[Variant]) -> Variant:
 	return null

@@ -81,9 +81,11 @@ func _call() -> Expr:
 			
 			arguments.append(arg)
 			
-			# Consume the comma
+			# Consume the comma unless this is last arg
 			if _peek().token_type == Token.COMMA:
 				_advance()
+			elif _peek().token_type == Token.CLOSE_PAREN:
+				pass
 			else:
 				var msg: String = "',' expected between arguments"
 				interpreter.error_handler.error(paren_token.line_num, msg)
@@ -422,47 +424,13 @@ func _expression_statement() -> Statement:
 	return Statement.ExprStmt.new(line_num, expr)
 
 
-func _print_statement() -> Statement:
-	# Consume print keyword and opening paren while getting line num from print
-	var line_num: int = _advance().line_num
-	if _peek().token_type == Token.OPEN_PAREN:
-		_advance()
-	else:
-		interpreter.error_handler.error(line_num, "'(' expected after print")
-		return null
-	
-	var printed_expr: Expr = _expression()
-	
-	if not printed_expr:
-		return null
-	
-	# Consume closing paren
-	if _peek().token_type == Token.CLOSE_PAREN:
-		_advance()
-	else:
-		interpreter.error_handler.error(line_num, "')' expected after printed expression")
-		return null
-	
-	if _peek().token_type == Token.NEW_LINE:
-		# Consume the new line
-		_advance()
-	elif _peek().token_type == Token.EOF:
-		# We are at the end of the file. This is also the end of the line
-		pass
-	else:
-		interpreter.error_handler.error(line_num, "Only one statement allowed per line")
-		return null
-	
-	return Statement.Print.new(line_num, printed_expr)
-
-
 func _declaration_statement() -> Statement:
 	# Use type token for starting line and data type
 	var type_token: Token = _advance()
 	var line_num: int = type_token.line_num
 	var data_type: String = type_token.lexeme
 	
-	if type_token.lexeme in ["null", "mixed"]:
+	if type_token.lexeme in ["null", "mixed", "void"]:
 		var msg: String = "Can not declare variable of type %s" % data_type
 		interpreter.error_handler.error(line_num, msg)
 		return null
@@ -812,8 +780,6 @@ func _statement() -> Statement:
 	match _peek().token_type:
 		Token.NEW_LINE:
 			return Statement.Empty.new(_advance().line_num)
-		Token.PRINT:
-			statement = _print_statement()
 		Token.DATA_TYPE:
 			statement = _declaration_statement()
 		Token.IF:

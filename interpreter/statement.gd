@@ -25,19 +25,6 @@ class ExprStmt:
 		return str(expr)
 
 
-class Print:
-	extends Statement
-	
-	var expr: Expr
-	
-	func _init(p_line_start: int, p_expr: Expr) -> void:
-		line_start = p_line_start
-		expr = p_expr
-	
-	func _to_string() -> String:
-		return "print(%s)" % expr
-
-
 class Declaration:
 	extends Statement
 	

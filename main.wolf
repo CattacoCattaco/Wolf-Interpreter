@@ -24,3 +24,6 @@ print("")
 
 for int k in range(16, 30, 2):
 	print(k)
+
+if i == 12:
+	clear_console()

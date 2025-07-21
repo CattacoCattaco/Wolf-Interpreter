@@ -61,4 +61,4 @@ func _file_selected(path: String) -> void:
 
 
 func _run() -> void:
-	interpreter.run(_code_edit.text)
+	await interpreter.run(_code_edit.text)

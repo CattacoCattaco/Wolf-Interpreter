@@ -23,6 +23,15 @@ func run(code: String) -> void:
 	error_handler.clear()
 	environment = WolfEnvironment.new()
 	
+	environment.types["clear_console"] = "callable"
+	environment.values["clear_console"] = ClearConsole.new(self)
+	
+	environment.types["print"] = "callable"
+	environment.values["print"] = Print.new(self)
+	
+	environment.types["prompt"] = "callable"
+	environment.values["prompt"] = Prompt.new(self)
+	
 	if do_debug:
 		console.println("Input: " + code)
 	
@@ -33,7 +42,8 @@ func run(code: String) -> void:
 	
 	# Exit early if errors present
 	if error_handler.errors:
-		console.println("\n")
+		if do_debug:
+			console.println("\n")
 		return
 	
 	if do_debug:
@@ -50,7 +60,8 @@ func run(code: String) -> void:
 	
 	# Exit early if errors present
 	if error_handler.errors:
-		console.println("\n")
+		if do_debug:
+			console.println("\n")
 		return
 	
 	if do_debug:
@@ -66,7 +77,8 @@ func run(code: String) -> void:
 	
 	# Exit early if errors present
 	if error_handler.errors:
-		console.println("\n")
+		if do_debug:
+			console.println("\n")
 		return
 	
 	if do_debug:
@@ -77,6 +89,7 @@ func run(code: String) -> void:
 	var evaluator := Evaluator.new()
 	evaluator.interpreter = self
 	
-	evaluator.evaluate_statements(statements)
+	await evaluator.evaluate_statements(statements)
 	
-	console.println("\n")
+	if do_debug:
+		console.println("\n")

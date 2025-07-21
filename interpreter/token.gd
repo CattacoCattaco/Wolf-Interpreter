@@ -38,15 +38,14 @@ enum {
 	CLASS, STRUCT, # 59 and 60
 	IS, AS, # 61 and 62
 	RETURN, # 63
-	PRINT, # 64
-	SUPER, # 65
+	SUPER, # 64
 
 	# We need to keep track of leading whitespace
-	INDENT, # 66
-	OUTDENT, # 67
+	INDENT, # 65
+	OUTDENT, # 66
 
 	# End of file
-	EOF, # 68
+	EOF, # 67
 }
 
 ## Converts from keyword names to their respective token types
@@ -70,7 +69,6 @@ const KEYWORDS: Dictionary[String, int] = {
 	"is": IS,
 	"as": AS,
 	"return": RETURN,
-	"print": PRINT,
 	"super": SUPER,
 }
 

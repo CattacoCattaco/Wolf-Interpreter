@@ -2,7 +2,7 @@ class_name Expr
 extends RefCounted
 ## Represents a Wolf language expression
 
-var ret_type: String
+var ret_type: String = ""
 
 
 ## Represents a variable assignment
@@ -111,12 +111,17 @@ class Call:
 	extends Expr
 	
 	## The function being called:
-	var callable: Expr
+	var callable_expr: Expr
+	## The Closing parenthesis
 	var close_paren: Token
+	## The expressions of the arguments
 	var args: Array[Expr]
 	
-	func _init(p_callable: Expr, p_close_paren: Token, p_args: Array[Expr]) -> void:
-		callable = p_callable
+	## The actual callable for the function
+	var callable: WolfCallable
+	
+	func _init(p_callable_expr: Expr, p_close_paren: Token, p_args: Array[Expr]) -> void:
+		callable_expr = p_callable_expr
 		close_paren = p_close_paren
 		args = p_args
 	

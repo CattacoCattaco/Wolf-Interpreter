@@ -28,9 +28,7 @@ func type_check_statements(statements: Array[Statement]) -> void:
 
 
 func type_check_statement(statement: Statement) -> void:
-	if statement is Statement.Print:
-		type_check_print_statement(statement)
-	elif statement is Statement.Declaration:
+	if statement is Statement.Declaration:
 		type_check_declaration_statement(statement)
 	elif statement is Statement.ExprStmt:
 		type_check_expr_statement(statement)
@@ -45,11 +43,6 @@ func type_check_statement(statement: Statement) -> void:
 
 
 func type_check_expr_statement(statement: Statement.ExprStmt) -> void:
-	get_type(statement.expr)
-	return
-
-
-func type_check_print_statement(statement: Statement.Print) -> void:
 	get_type(statement.expr)
 	return
 
@@ -199,16 +192,40 @@ func get_grouped_type(expr: Expr.Grouping) -> String:
 
 
 func get_call_type(expr: Expr.Call) -> String:
-	var callable_type: String = get_type(expr.callable)
+	var callable_type: String = get_type(expr.callable_expr)
 	if callable_type != "callable":
 		var msg: String = "Cannot call %s" % callable_type
 		interpreter.error_handler.error(expr.close_paren.line_num, msg)
 		return callable_type
 	
-	var variable_type: String = current_env.get_type(expr.name_token.lexeme)
+	var callable_name: String
+	var callable: WolfCallable
 	
-	expr.ret_type = variable_type
-	return variable_type
+	if expr.callable_expr is Expr.Variable:
+		if current_env.var_has_value(expr.callable_expr.name_token.lexeme):
+			callable = current_env.get_value(expr.callable_expr.name_token.lexeme)
+			callable_name = expr.callable_expr.name_token.lexeme
+		else:
+			for arg: Expr in expr.args:
+				get_type(arg)
+			return "mixed"
+	
+	expr.callable = callable
+	
+	var arg_types: Array[String]
+	
+	for arg: Expr in expr.args:
+		arg_types.append(get_type(arg))
+	
+	var ret_type: String = callable._ret_type(arg_types)
+	
+	if ret_type == "invalid args":
+		var msg: String = "Invalid args for %s" % callable_name
+		interpreter.error_handler.error(expr.close_paren.line_num, msg)
+		return "callable_type"
+	
+	expr.ret_type = ret_type
+	return ret_type
 
 
 func get_converted_type(expr: Expr.Conversion) -> String:

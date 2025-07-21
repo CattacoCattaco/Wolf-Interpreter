@@ -168,7 +168,7 @@ size_flags_horizontal = 3
 [node name="Console" type="RichTextLabel" parent="HSplitContainer/Console/VBoxContainer2/ColorRect/ScrollContainer/VBoxContainer" node_paths=PackedStringArray("input_line")]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
+size_flags_vertical = 0
 bbcode_enabled = true
 fit_content = true
 scroll_active = false
@@ -513,11 +513,17 @@ text = "	[font_size=24][b][u]Logical:[/u][/b][/font_size]
  Returns left input cast as the given type
  Returns given type[/ul]
 
-	[b]()[/b]
+	[b]() (Grouping)[/b]
 [ul] Takes a middle input
  Middle input should be between \"(\" and \")\"
  Returns middle input
- Returns input type[/ul]"
+ Returns input type[/ul]
+
+	[b]() (Function Call)[/b]
+[ul] Takes a left input
+ Left input should be a callable
+ Calls the callable
+ Returns callable's return type[/ul]"
 metadata/_tab_index = 1
 
 [node name="Operators Precedence" type="RichTextLabel" parent="Manual/TabContainer"]
@@ -577,11 +583,6 @@ text = "	[font_size=24][b][u]Flow Control:[/u][/b][/font_size]
  For each number in the given range, runs the indented block's code with a local variable named <NAME> as that value converted to <TYPE>[/ul]
 
 	[font_size=24][b][u]Other:[/u][/b][/font_size]
-	[b]Print:[/b]
-[ul] Written as \"print(<EXPRESSION>)\", where <EXPRESSION> is some expression
- Converts value returned by expression to string and prints it to the console
- BBCode is supported[/ul]
-
 	[b]Declaration:[/b]
 [ul] Written as \"<TYPE> <NAME>\" or \"<TYPE> <NAME> = <INITIALIZER>\", where <TYPE> is the variable's type, <NAME> is the variable's name, and <INITIALIZER> is the starting value of the variable
  Creates a variable named <NAME> of type <TYPE>. If <INITIALIZER> is present, sets it to <INITIALIZER>. Otherwise, the type's default value is used.[/ul]
@@ -590,6 +591,31 @@ text = "	[font_size=24][b][u]Flow Control:[/u][/b][/font_size]
 [ul] Written as \"<EXPRESSION>\", where <EXPRESSION> is some expression
  Evaluates expression[/ul]"
 metadata/_tab_index = 3
+
+[node name="Functions" type="RichTextLabel" parent="Manual/TabContainer"]
+visible = false
+layout_mode = 2
+bbcode_enabled = true
+text = "	[font_size=24][b][u]Console:[/u][/b][/font_size]
+
+	[b]print:[/b]
+[ul] Takes any number of parameters
+ Converts each input into a string and prints it to the console, adding a new line after each one
+ BBCode is supported
+ Returns void[/ul]
+
+	[b]clear_console:[/b]
+[ul] Takes no parameters
+ Clears the console
+ Returns void[/ul]
+
+	[b]prompt:[/b]
+[ul] Takes one parameter
+ Parameter must be a string
+ Prints parameter to console followed by a new line, then waits for the user to submit a line of text
+ Returns the user's submitted text
+ Returns string[/ul]"
+metadata/_tab_index = 4
 
 [node name="CloseManualButton" type="Button" parent="Manual"]
 layout_mode = 1

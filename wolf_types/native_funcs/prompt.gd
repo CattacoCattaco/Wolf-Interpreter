@@ -1,4 +1,4 @@
-class_name ClearConsole
+class_name Prompt
 extends WolfCallable
 ## Reprsents the clear console function
 
@@ -12,7 +12,7 @@ func _init(p_interpreter: Interpreter) -> void:
 
 ## Checks if the given args are of the correct amount and types for the function
 func _args_fit(arg_types: Array[String]) -> bool:
-	return len(arg_types) == 0
+	return len(arg_types) == 1 and arg_types[0] == "string"
 
 
 ## Checks the return type of the function based on the amount and types of the args
@@ -20,11 +20,13 @@ func _ret_type(arg_types: Array[String]) -> String:
 	if not _args_fit(arg_types):
 		return "invalid args"
 	
-	return "void"
+	return "string"
 
 
 ## Calls the function
 ## Void funcs return null
 func _call(args: Array[Variant]) -> Variant:
-	interpreter.console.clear_text()
-	return null
+	interpreter.console.println(args[0])
+	var result: String = await interpreter.console.input_submitted
+	print("User said: " + result)
+	return result
