@@ -646,7 +646,23 @@ text = "	[font_size=24][b][u]Console:[/u][/b][/font_size]
 [ul] Takes three parameters
  Parameters one and two must be ints and parameter three must be a char
  Sets the \"character\" of the cell at (param one, param two) to be the character corresponding to the given index (See character table)
- Returns void[/ul]"
+ Returns void[/ul]
+
+	[font_size=24][b][u]Misc:[/u][/b][/font_size]
+
+	[b]wait:[/b]
+[ul] Takes one parameter
+ Parameter must be a number
+ Waits for the given amount of miliseconds
+ Returns void[/ul]
+
+	[b]is_key_down:[/b]
+[ul] Takes one parameter
+ Parameter must be a number
+ Recomended: Use the constants KEY_{NAME} where name is a capital letter or a digit. More constants coming soon
+ Checks if the given key is down
+ Returns if the key is down
+ Returns bool[/ul]"
 metadata/_tab_index = 4
 
 [node name="Character Table" type="RichTextLabel" parent="Manual/TabContainer"]
