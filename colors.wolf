@@ -1,0 +1,20 @@
+while not is_key_down(KEYCODE_X):
+	for int x in range(16):
+		for int y in range(16):
+			set_cell_bg_color(x, y,  16 * x, 16 * y, 255)
+			set_cell_char_color(x, y, 255 - 16 * x, 255 - 16 * y, 0)
+			set_cell_char(x, y, 88)
+			wait(20)
+	
+	while not is_key_down(KEYCODE_R):
+		wait(100)
+	
+	for int x in range(16):
+		for int y in range(16):
+			set_cell_bg_color(x, y, 255 - 16 * x, 255 - 16 * y, 0)
+			set_cell_char_color(x, y,  16 * x, 16 * y, 255)
+			set_cell_char(x, y, 88)
+			wait(20)
+	
+	while not is_key_down(KEYCODE_R):
+		wait(100)

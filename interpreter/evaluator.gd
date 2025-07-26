@@ -109,7 +109,10 @@ func evaluate_while_statement(statement: Statement.While) -> void:
 	if _stopped:
 		return
 	
-	while (await evaluate_expr(statement.condition)).value:
+	while not _stopped and (await evaluate_expr(statement.condition)).value:
+		if _stopped:
+			return
+		
 		statement.block.environment.values = {}
 		await evaluate_block_statement(statement.block)
 	

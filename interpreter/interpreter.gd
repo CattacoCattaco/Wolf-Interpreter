@@ -9,6 +9,8 @@ var environment: WolfEnvironment
 
 var do_debug: bool = false
 
+var last_evaluator: Evaluator
+
 
 func _init(p_console: Console, p_game: Game) -> void:
 	if not Typer.data_types:
@@ -61,6 +63,9 @@ func add_globals() -> void:
 
 
 func run(code: String) -> void:
+	if last_evaluator:
+		last_evaluator.stop()
+	
 	error_handler.clear()
 	environment = WolfEnvironment.new()
 	
@@ -125,6 +130,8 @@ func run(code: String) -> void:
 	
 	var evaluator := Evaluator.new()
 	evaluator.interpreter = self
+	
+	last_evaluator = evaluator
 	
 	await evaluator.evaluate_statements(statements)
 	
