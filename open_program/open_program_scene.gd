@@ -3,6 +3,7 @@ extends Control
 
 @export var _file_dialog: FileDialog
 @export var _console: Console
+@export var _game: Game
 
 @export var _code_edit: CodeEdit
 
@@ -16,7 +17,7 @@ extends Control
 
 var wolf_file: FileAccess
 
-@onready var interpreter := Interpreter.new(_console)
+@onready var interpreter := Interpreter.new(_console, _game)
 
 func _ready() -> void:
 	if OS.has_feature("debug"):

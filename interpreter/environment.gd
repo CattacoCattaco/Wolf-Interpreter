@@ -1,8 +1,8 @@
 class_name WolfEnvironment
 extends RefCounted
 
-var values: Dictionary[String, Variant] = {}
-var types: Dictionary[String, String] = {}
+var values: Dictionary[String, WolfObject] = {}
+var types: Dictionary[String, WolfType] = {}
 
 var parent_environment: WolfEnvironment
 
@@ -11,7 +11,7 @@ func _init(p_parent_environment: WolfEnvironment = null) -> void:
 	parent_environment = p_parent_environment
 
 
-func get_value(var_name: String) -> Variant:
+func get_value(var_name: String) -> WolfObject:
 	if var_name in values:
 		return values[var_name]
 	elif parent_environment:
@@ -20,7 +20,7 @@ func get_value(var_name: String) -> Variant:
 	return null
 
 
-func set_value(var_name: String, value: Variant) -> void:
+func set_value(var_name: String, value: WolfObject) -> void:
 	if var_name in values:
 		values[var_name] = value
 		return
@@ -28,13 +28,13 @@ func set_value(var_name: String, value: Variant) -> void:
 		parent_environment.set_value(var_name, value)
 
 
-func get_type(var_name: String) -> String:
+func get_type(var_name: String) -> WolfType:
 	if var_name in types:
 		return types[var_name]
 	elif parent_environment:
 		return parent_environment.get_type(var_name)
 	
-	return "error"
+	return null
 
 
 func var_has_type(var_name: String) -> bool:

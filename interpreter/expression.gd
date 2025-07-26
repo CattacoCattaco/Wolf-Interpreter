@@ -2,7 +2,7 @@ class_name Expr
 extends RefCounted
 ## Represents a Wolf language expression
 
-var ret_type: String = ""
+var ret_type: WolfType = Typer.data_types["any"]
 
 
 ## Represents a variable assignment
@@ -91,11 +91,11 @@ class Conversion:
 	## The expression which was type converted
 	var converted_expr: Expr
 	## The type which is being converted to
-	var new_type: String
+	var new_type: WolfType
 	## The line number of the as token
 	var line: int
 	
-	func _init(p_converted_expr: Expr, p_new_type: String, p_line: int) -> void:
+	func _init(p_converted_expr: Expr, p_new_type: WolfType, p_line: int) -> void:
 		converted_expr = p_converted_expr
 		new_type = p_new_type
 		line = p_line
@@ -172,9 +172,9 @@ class Literal:
 	
 	func _to_string() -> String:
 		# Strings and chars need double or single quotes surrounding them
-		if literal_token.literal_type == "string":
+		if literal_token.literal_value._get_type() == Typer.data_types["string"]:
 			return "\"%s\"" % literal_token.literal_value
-		elif literal_token.literal_type == "char":
-			return "'%s'" % literal_token.literal_value
+		elif literal_token.literal_value._get_type() == Typer.data_types["char"]:
+			return "'%s'" % char(literal_token.literal_value.value)
 		
 		return "%s" % literal_token.literal_value

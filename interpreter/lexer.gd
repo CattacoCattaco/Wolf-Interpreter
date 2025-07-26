@@ -56,9 +56,9 @@ func _advance() -> String:
 
 
 ## Add a token to tokens
-func _add_token(token_type: int, literal_value: Variant = null, literal_type: String = "") -> void:
+func _add_token(token_type: int, literal_value: WolfObject = null) -> void:
 	var text: String = source.substr(start, current - start)
-	tokens.append(Token.new(token_type, text, literal_value, literal_type, line))
+	tokens.append(Token.new(token_type, text, literal_value, line))
 
 
 ## Is the inputted string a single digit?
@@ -427,7 +427,7 @@ func _scan_token() -> void:
 			
 			if _peek() == "'":
 				_advance()
-				_add_token(Token.LITERAL, character, "char")
+				_add_token(Token.LITERAL, WolfChar.new(character.unicode_at(0)))
 			else:
 				interpreter.error_handler.error(line, "Unclosed or too long char")
 		"\"":
@@ -464,7 +464,7 @@ func _scan_token() -> void:
 			# Eat closing "
 			_advance()
 			
-			_add_token(Token.LITERAL, string, "string")
+			_add_token(Token.LITERAL, WolfString.new(string))
 		_:
 			if _is_digit(c):
 				_check_no_lead_white_space()
@@ -482,9 +482,9 @@ func _scan_token() -> void:
 						place_num += 1
 						value += _advance().to_int() / pow(10, place_num)
 					
-					_add_token(Token.LITERAL, value, "float")
+					_add_token(Token.LITERAL, WolfFloat.new(value))
 				else:
-					_add_token(Token.LITERAL, int_part, "int")
+					_add_token(Token.LITERAL, WolfInt.new(int_part))
 			elif _is_alpha(c):
 				_check_no_lead_white_space()
 				
@@ -494,14 +494,14 @@ func _scan_token() -> void:
 					identifier += _advance()
 				
 				if identifier == "true":
-					_add_token(Token.LITERAL, true, "bool")
+					_add_token(Token.LITERAL, WolfBool.new(true))
 				elif identifier == "false":
-					_add_token(Token.LITERAL, false, "bool")
+					_add_token(Token.LITERAL, WolfBool.new(false))
 				elif identifier == "null":
-					_add_token(Token.LITERAL, null, "null")
+					_add_token(Token.LITERAL, WolfNullable.new())
 				elif identifier in Token.KEYWORDS:
 					_add_token(Token.KEYWORDS[identifier])
-				elif identifier in Typer.DATA_TYPES:
+				elif identifier in Typer.data_types:
 					_add_token(Token.DATA_TYPE)
 				else:
 					_add_token(Token.IDENTIFIER)

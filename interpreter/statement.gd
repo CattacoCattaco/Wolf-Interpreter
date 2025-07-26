@@ -28,11 +28,11 @@ class ExprStmt:
 class Declaration:
 	extends Statement
 	
-	var data_type: String
+	var data_type: WolfType
 	var name: Token
 	var initializer: Expr
 	
-	func _init(p_line_start: int, p_data_type: String, p_name: Token, p_initializer: Expr) -> void:
+	func _init(p_line_start: int, p_data_type: WolfType, p_name: Token, p_initializer: Expr) -> void:
 		line_start = p_line_start
 		data_type = p_data_type
 		name = p_name
@@ -125,14 +125,14 @@ class While:
 class ForRange:
 	extends Statement
 	
-	var var_type: String
+	var var_type: WolfType
 	var var_name: String
 	var start: Expr
 	var end: Expr
 	var step: Expr
 	var block: Block
 	
-	func _init(p_line_start: int, p_var_type: String, p_var_name: String, p_start: Expr,
+	func _init(p_line_start: int, p_var_type: WolfType, p_var_name: String, p_start: Expr,
 			p_end: Expr, p_step: Expr, p_block: Block) -> void:
 		line_start = p_line_start
 		var_type = p_var_type
@@ -143,5 +143,4 @@ class ForRange:
 		block = p_block
 	
 	func _to_string() -> String:
-		var ret_text: String = "for %s %s in range(" % [var_type]
-		return "for %s %s in range(:\n%s" % [block]
+		return "for %s %s in range(%s, %s, %s)\n%s" % [var_type, var_name, start, end, step, block]

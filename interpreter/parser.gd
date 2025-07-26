@@ -249,7 +249,7 @@ func _conversion() -> Expr:
 			interpreter.error_handler.error(_peek().line_num, "Type expected")
 			return null
 		
-		expr = Expr.Conversion.new(expr, conversion_type, as_line)
+		expr = Expr.Conversion.new(expr, Typer.data_types[conversion_type], as_line)
 	
 	return expr
 
@@ -428,9 +428,9 @@ func _declaration_statement() -> Statement:
 	# Use type token for starting line and data type
 	var type_token: Token = _advance()
 	var line_num: int = type_token.line_num
-	var data_type: String = type_token.lexeme
+	var data_type: WolfType = Typer.data_types[type_token.lexeme]
 	
-	if type_token.lexeme in ["null", "mixed", "void"]:
+	if not data_type.inherits(Typer.data_types["value"]):
 		var msg: String = "Can not declare variable of type %s" % data_type
 		interpreter.error_handler.error(line_num, msg)
 		return null
@@ -477,7 +477,7 @@ func _declaration_statement() -> Statement:
 	return Statement.Declaration.new(line_num, data_type, name_token, initializer)
 
 
-func _block(local_var_types: Dictionary[String, String] = {}) -> Statement.Block:
+func _block(local_var_types: Dictionary[String, WolfType] = {}) -> Statement.Block:
 	# Get line_num from Indent
 	var line_num: int = _advance().line_num
 	
@@ -671,10 +671,10 @@ func _for() -> Statement:
 	# Get line_num from for
 	var line_num: int = _advance().line_num
 	
-	var var_type: String
+	var var_type: WolfType
 	
 	if _peek().token_type == Token.DATA_TYPE:
-		var_type = _advance().lexeme
+		var_type = Typer.data_types[_advance().lexeme]
 	else:
 		interpreter.error_handler.error(line_num, "Variable type expected after for")
 		return null
@@ -709,9 +709,9 @@ func _for() -> Statement:
 		return null
 	
 	# End is required but start and step default to 0 and 1 respectively
-	var start: Expr = Expr.Literal.new(Token.new(Token.LITERAL, "0", 0, "int", line_num))
+	var start: Expr = Expr.Literal.new(Token.new(Token.LITERAL, "0", WolfInt.new(0), line_num))
 	var end: Expr
-	var step: Expr = Expr.Literal.new(Token.new(Token.LITERAL, "1", 1, "int", line_num))
+	var step: Expr = Expr.Literal.new(Token.new(Token.LITERAL, "1", WolfInt.new(1), line_num))
 	
 	end = _expression()
 	
@@ -722,8 +722,6 @@ func _for() -> Statement:
 		_advance()
 		
 		start = end
-		
-		print("hi")
 		
 		end = _expression()
 		

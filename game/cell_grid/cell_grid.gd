@@ -23,6 +23,15 @@ func _ready() -> void:
 			
 			char_datas.append(bit_map)
 	
+	load_grid()
+
+
+func load_grid() -> void:
+	for cell in cells:
+		cell.queue_free()
+	
+	cells = []
+	
 	columns = grid_size
 	
 	for y in range(grid_size):

@@ -1,0 +1,53 @@
+int player_x = 7
+int player_y = 7
+
+int move_dir = -1
+
+bool lost = false
+
+while is_key_down(KEYCODE_X) nor lost:
+	wait(100)
+	
+	for int x in range(16):
+		for int y in range(16):
+			set_cell_bg_color(x, y, 0, 0, 30)
+	
+	if is_key_down(KEYCODE_A):
+		move_dir = 0
+	elif is_key_down(KEYCODE_D):
+		move_dir = 1
+	elif is_key_down(KEYCODE_W):
+		move_dir = 2
+	elif is_key_down(KEYCODE_S):
+		move_dir = 3
+	
+	if move_dir == 0:
+		player_x -= 1
+		
+		if player_x < 0:
+			lost = true
+			player_x = 7
+	elif move_dir == 1:
+		player_x += 1
+		
+		if player_x > 15:
+			lost = true
+			player_x = 7
+	elif move_dir == 2:
+		player_y -= 1
+		
+		if player_y < 0:
+			lost = true
+			player_y = 7
+	elif move_dir == 3:
+		player_y += 1
+		
+		if player_y > 15:
+			lost = true
+			player_y = 7
+	
+	set_cell_bg_color(player_x, player_y, 0, 255, 0)
+
+for int x in range(16):
+	for int y in range(16):
+		set_cell_bg_color(x, y, 60, 0, 0)

@@ -77,21 +77,18 @@ var token_type: int
 ## The characters that made this token
 var lexeme: String
 ## The value of this token if it's a literal
-var literal_value: Variant
-## The type of this token if it's a literal, always lower case
-var literal_type: String
+var literal_value: WolfObject
 ## The line number of this token
 var line_num: int
 
 
-func _init(p_token_type: int = 0, p_lexeme: String = "", p_literal_value: Variant = null, 
-		p_literal_type: String = "", p_line_num: int = 0) -> void:
+func _init(p_token_type: int = 0, p_lexeme: String = "", p_literal_value: WolfObject = null, 
+		p_line_num: int = 0) -> void:
 	token_type = p_token_type
 	lexeme = p_lexeme
 	literal_value = p_literal_value
-	literal_type = p_literal_type
 	line_num = p_line_num
 
 
 func _to_string() -> String:
-	return "( %d %s %s %s )" % [token_type, lexeme, literal_value, literal_type]
+	return "( %d %s %s )" % [token_type, lexeme, literal_value]
